@@ -12,7 +12,7 @@
 | 特殊组合（Collaboration / Limited） | 组合中的 tap effect（persona、miku、cafe、maid、coin、witch、stage、delta、april2019）× 其余轴的普通设置；persona 的方向键组合另固定方向键皮肤 | 92 |
 | `#HABAHIRO` | habahiro tap effect（含宽度变体与换道闪光所在 bundle）× 全部可选方向键皮肤（5 个普通 + persona）× normal / light | 12 |
 
-条目名 `notgarupa-<tap effect>-<方向键皮肤><normal|light>`，例如 `notgarupa-skin00-skin00normal`（默认）、`notgarupa-skin_witch-skin03light`、`notgarupa-habahiro-skin00normal`（HABAHIRO 关卡默认）。HABAHIRO 条目的 `Result.Habahiro` 为 true，由服务器对 `#HABAHIRO` 关卡强制选用。
+条目名 `notgarupa-<tap effect>-<方向键皮肤><normal|light>`，例如 `notgarupa-skin00-skin00normal`（默认）、`notgarupa-skin_witch-skin03light`、`notgarupa-habahiro-skin00normal`（HABAHIRO 关卡默认）。HABAHIRO 条目的 `Result.Habahiro` 为 true。它们不是与普通条目并列的粒子：服务器不在列表中提供它们，只按玩家的方向键配置项为 `#HABAHIRO` 关卡选用对应条目（见 `sonolus-notgarupa-server` 的 README）。
 
 主数据中无法取得素材的组合（collaboration 3 / seasonSpecialId 36）整组排除，见 `internal/master`；任何其余素材下载失败都是错误，不会生成残缺的条目。
 
