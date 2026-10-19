@@ -69,6 +69,7 @@ var Excluded = []Exclusion{
 	{Special: "collaboration 3", Reason: "seasonSpecialId 36 (skinapril2019, with a cut-in component): its tap effect and tap SE bundles are no longer on the official CDN and the Bestdori rips are incomplete; the original treats the row as unavailable"},
 	{Background: "skin01", Reason: "story event background: no bundle on the official CDN or on any Bestdori server"},
 	{Background: "skin04", Reason: "live try event background: no bundle on the official CDN or on any Bestdori server"},
+	{Background: "skin_teamlivefestival", Reason: "team live festival event background: the bundle has no live background texture (liveBG); only the team-live-festival multi live composes it, from per-team stage objects, and a single live never shows it"},
 }
 
 // Exclusion is one excluded special row (by "<kind> <id>") or background.
