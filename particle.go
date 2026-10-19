@@ -110,23 +110,12 @@ type Source struct {
 	Log func(format string, args ...any)
 }
 
-// Variant selects the particle item.
-type Variant string
-
-const (
-	// Normal is tap effect skin00 (item notgarupa-skin00).
-	Normal Variant = "normal"
-	// Habahiro is the HABAHIRO tap effects with width variants, for
-	// multi-width charts (item notgarupa-habahiro).
-	Habahiro Variant = "habahiro"
-)
-
 // Options selects what to build. The zero value builds the default item.
 type Options struct {
-	Variant Variant // "" = Normal
-	// Name is the particle item name ("" = notgarupa-skin00, or
-	// notgarupa-habahiro for Habahiro).
+	// Name is the ordinary item name ("" = notgarupa-skin00).
 	Name string
+	// HabahiroName is the #HABAHIRO item name ("" = notgarupa-habahiro).
+	HabahiroName string
 	// Strata is the number of stratified sub-groups per burst for randomised
 	// values that Sonolus cannot express linearly (0 = 4).
 	Strata int
@@ -149,7 +138,10 @@ type Result struct {
 	// Item is the database item; its resource fields (Thumbnail, Data,
 	// Texture) are left empty for the caller to fill, e.g. with the server's
 	// repository URLs of Files().
-	Item      database.DatabaseParticleItem
+	Item database.DatabaseParticleItem
+	// Habahiro marks the item of #HABAHIRO levels, which the server forces
+	// for them as the original does.
+	Habahiro  bool
 	Data      resource.ParticleData
 	Texture   []byte // PNG
 	Thumbnail []byte // PNG
@@ -203,22 +195,16 @@ func WriteSource(root string, results ...*Result) error {
 	return nil
 }
 
-// Generate builds the particle item.
-func Generate(ctx context.Context, opts Options) (*Result, error) {
-	habahiro := false
-	switch opts.Variant {
-	case "", Normal:
-	case Habahiro:
-		habahiro = true
-	default:
-		return nil, fmt.Errorf("unknown variant %q (normal, habahiro)", opts.Variant)
-	}
-	name := opts.Name
+// Generate builds the two particle items NotGarupa uses, in this order: the
+// ordinary item (tap effect skin00) and the item of #HABAHIRO levels (the
+// HABAHIRO tap effects plus their width variants for multi-width notes).
+func Generate(ctx context.Context, opts Options) ([]*Result, error) {
+	name, habahiroName := opts.Name, opts.HabahiroName
 	if name == "" {
 		name = "notgarupa-skin00"
-		if habahiro {
-			name = "notgarupa-habahiro"
-		}
+	}
+	if habahiroName == "" {
+		habahiroName = "notgarupa-habahiro"
 	}
 	o := convertOptions{maxStrata: opts.Strata, maxSegments: opts.Segments, posTol: opts.Tolerance, loopSeconds: opts.LoopSeconds}
 	if o.maxStrata <= 0 {
@@ -237,6 +223,27 @@ func Generate(ctx context.Context, opts Options) (*Result, error) {
 	// Tap effects: the original asset bundles (official content CDN).
 	bundles := &cdn.Client{Version: opts.Source.AssetVersion, CacheDir: opts.Source.CacheDir, Offline: opts.Source.Offline,
 		HTTP: opts.Source.HTTPClient, Log: opts.Source.Log, Ctx: ctx}
+	bundleData := map[string][]byte{}
+	for key, bundleName := range tapBundles {
+		data, err := bundles.Bundle(bundleName)
+		if err != nil {
+			return nil, err
+		}
+		bundleData[key] = data
+	}
+	normal, err := generate(bundleData, o, false, name, opts.NoStandardNames)
+	if err != nil {
+		return nil, err
+	}
+	habahiro, err := generate(bundleData, o, true, habahiroName, opts.NoStandardNames)
+	if err != nil {
+		return nil, fmt.Errorf("HABAHIRO item: %w", err)
+	}
+	return []*Result{normal, habahiro}, nil
+}
+
+// generate converts one item from the raw tap-effect bundles.
+func generate(bundleData map[string][]byte, o convertOptions, habahiro bool, name string, noStandardNames bool) (*Result, error) {
 	store := newTextureStore()
 	type tapBundle struct {
 		b        *Bundle
@@ -247,11 +254,7 @@ func Generate(ctx context.Context, opts Options) (*Result, error) {
 		if key == "habahiro" && !habahiro {
 			continue
 		}
-		data, err := bundles.Bundle(bundleName)
-		if err != nil {
-			return nil, err
-		}
-		b, in, textures, err := readTapBundle(data, key)
+		b, in, textures, err := readTapBundle(bundleData[key], key)
 		if err != nil {
 			return nil, fmt.Errorf("%s: %w", bundleName, err)
 		}
@@ -407,7 +410,7 @@ func Generate(ctx context.Context, opts Options) (*Result, error) {
 	for _, pt := range parts {
 		emit(pt)
 	}
-	if !opts.NoStandardNames {
+	if !noStandardNames {
 		colours := []string{"NEUTRAL", "RED", "GREEN", "BLUE", "YELLOW", "PURPLE", "CYAN"}
 		for _, prefix := range sortedStrings(standardAliases) {
 			src, ok := byName[standardAliases[prefix]]
@@ -455,6 +458,7 @@ func Generate(ctx context.Context, opts Options) (*Result, error) {
 			Tags:        []database.DatabaseTag{},
 			Description: packout.T(desc, desc, desc),
 		},
+		Habahiro:  habahiro,
 		Data:      data,
 		Texture:   texture,
 		Thumbnail: thumb,

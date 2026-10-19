@@ -14,9 +14,3 @@ func TestGenerateOfflineWithoutCache(t *testing.T) {
 		t.Fatalf("want an offline error, got %v", err)
 	}
 }
-
-func TestGenerateRejectsUnknownOption(t *testing.T) {
-	if _, err := Generate(context.Background(), Options{Variant: "wide"}); err == nil {
-		t.Fatal("want an error")
-	}
-}
