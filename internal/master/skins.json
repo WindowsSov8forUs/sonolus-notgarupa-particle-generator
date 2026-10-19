@@ -1,0 +1,688 @@
+{
+ "source": "BanG Dream! Girls Band Party! JP 10.1.4 (230) master data: MasterSkinNotes / Lane / Effect / SoundEffect / DirectionalFlick / Background, MasterCollaborationSkin, MasterLimitedSkin",
+ "rules": {
+  "normal": "each live setting picks one row per axis (default id 1); the directional effect bundle is tapeffect/directionalflick<directionalFlick bundle><normal|light>",
+  "special": "a Collaboration or Limited row replaces the axes listed in components; the other axes keep the normal setting",
+  "fixed": {
+   "judge": "skin00",
+   "directionalSE": "directionalflickskin00"
+  },
+  "habahiro": {
+   "notes": "habahiro",
+   "lane": "habahiro",
+   "laneBeforeLaneChange": "skin00",
+   "judge": "habahiro",
+   "effect": "habahiro",
+   "background": "habahiro",
+   "keeps": [
+    "soundEffect",
+    "directionalFlick",
+    "directionalEffect"
+   ]
+  }
+ },
+ "normal": {
+  "notes": [
+   {
+    "id": 1,
+    "bundle": "skin00",
+    "name": "TYPE1",
+    "noteSyncEdgeMargin": 0
+   },
+   {
+    "id": 2,
+    "bundle": "skin01",
+    "name": "TYPE2",
+    "noteSyncEdgeMargin": 0
+   },
+   {
+    "id": 3,
+    "bundle": "skin02",
+    "name": "TYPE3",
+    "noteSyncEdgeMargin": 0
+   },
+   {
+    "id": 4,
+    "bundle": "skin03",
+    "name": "TYPE4",
+    "noteSyncEdgeMargin": 0
+   },
+   {
+    "id": 5,
+    "bundle": "skin04",
+    "name": "TYPE5",
+    "noteSyncEdgeMargin": 0
+   },
+   {
+    "id": 6,
+    "bundle": "skin06",
+    "name": "TYPE6",
+    "noteSyncEdgeMargin": 0
+   },
+   {
+    "id": 7,
+    "bundle": "skin05",
+    "name": "TYPE7",
+    "noteSyncEdgeMargin": 1.1
+   }
+  ],
+  "lane": [
+   {
+    "id": 1,
+    "bundle": "skin00",
+    "name": "レーンスキン00",
+    "skinType": "NORMAL"
+   },
+   {
+    "id": 2,
+    "bundle": "skin01",
+    "name": "レーンスキン01",
+    "skinType": "NORMAL"
+   },
+   {
+    "id": 3,
+    "bundle": "skin02",
+    "name": "レーンスキン02",
+    "skinType": "NORMAL"
+   },
+   {
+    "id": 4,
+    "bundle": "skin03",
+    "name": "レーンスキン03",
+    "skinType": "NORMAL"
+   },
+   {
+    "id": 5,
+    "bundle": "skin04",
+    "name": "レーンスキン04",
+    "skinType": "NORMAL"
+   },
+   {
+    "id": 6,
+    "bundle": "skin05",
+    "name": "Poppin'Partyのレーン",
+    "skinType": "MISSION"
+   },
+   {
+    "id": 7,
+    "bundle": "skin06",
+    "name": "Afterglowのレーン",
+    "skinType": "MISSION"
+   },
+   {
+    "id": 8,
+    "bundle": "skin07",
+    "name": "Pastel＊Palettesのレーン",
+    "skinType": "MISSION"
+   },
+   {
+    "id": 9,
+    "bundle": "skin08",
+    "name": "Roseliaのレーン",
+    "skinType": "MISSION"
+   },
+   {
+    "id": 10,
+    "bundle": "skin09",
+    "name": "ハロー、ハッピーワールド！のレーン",
+    "skinType": "MISSION"
+   },
+   {
+    "id": 11,
+    "bundle": "skin10",
+    "name": "Morfonicaのレーン",
+    "skinType": "MISSION"
+   },
+   {
+    "id": 12,
+    "bundle": "skin11",
+    "name": "RAISE A SUILENのレーン",
+    "skinType": "MISSION"
+   },
+   {
+    "id": 13,
+    "bundle": "skin12",
+    "name": "レーンスキン05",
+    "skinType": "NORMAL"
+   },
+   {
+    "id": 14,
+    "bundle": "skin13",
+    "name": "レーンスキン06",
+    "skinType": "NORMAL"
+   },
+   {
+    "id": 15,
+    "bundle": "skin14",
+    "name": "MyGO!!!!!のレーン",
+    "skinType": "MISSION"
+   }
+  ],
+  "effect": [
+   {
+    "id": 1,
+    "bundle": "skin00",
+    "name": "エフェクトスキン00"
+   },
+   {
+    "id": 2,
+    "bundle": "skin01",
+    "name": "エフェクトスキン01"
+   },
+   {
+    "id": 3,
+    "bundle": "skin02",
+    "name": "エフェクトスキン02"
+   },
+   {
+    "id": 4,
+    "bundle": "skin03",
+    "name": "エフェクトスキン03"
+   },
+   {
+    "id": 5,
+    "bundle": "skin04",
+    "name": "エフェクトスキン04"
+   }
+  ],
+  "soundEffect": [
+   {
+    "id": 1,
+    "bundle": "skin00",
+    "name": "SEスキン00"
+   },
+   {
+    "id": 2,
+    "bundle": "skin01",
+    "name": "SEスキン01"
+   },
+   {
+    "id": 3,
+    "bundle": "skin02",
+    "name": "SEスキン02"
+   },
+   {
+    "id": 4,
+    "bundle": "skin03",
+    "name": "SEスキン03"
+   }
+  ],
+  "directionalFlick": [
+   {
+    "id": 1,
+    "bundle": "skin00",
+    "name": "TYPE1"
+   },
+   {
+    "id": 2,
+    "bundle": "skin01",
+    "name": "TYPE2"
+   },
+   {
+    "id": 3,
+    "bundle": "skin02",
+    "name": "TYPE3"
+   },
+   {
+    "id": 4,
+    "bundle": "skin03",
+    "name": "TYPE4"
+   },
+   {
+    "id": 5,
+    "bundle": "skin04",
+    "name": "TYPE5"
+   }
+  ],
+  "background": [
+   {
+    "id": 1,
+    "bundle": "skin00",
+    "name": "デフォルト背景",
+    "eventType": null
+   },
+   {
+    "id": 2,
+    "bundle": "skin01",
+    "name": "ストーリーイベント背景",
+    "eventType": "story"
+   },
+   {
+    "id": 3,
+    "bundle": "skin02",
+    "name": "チャレンジイベント背景",
+    "eventType": "challenge"
+   },
+   {
+    "id": 4,
+    "bundle": "skin03",
+    "name": "対バンイベント背景",
+    "eventType": "versus"
+   },
+   {
+    "id": 5,
+    "bundle": "skin04",
+    "name": "ライブトライイベント背景",
+    "eventType": "live_try"
+   },
+   {
+    "id": 7,
+    "bundle": "skin_teamlivefestival",
+    "name": "フェスイベント・ライブ背景",
+    "eventType": "festival"
+   }
+  ]
+ },
+ "special": [
+  {
+   "kind": "collaboration",
+   "id": 1,
+   "seasonSpecialId": 17,
+   "components": {
+    "background": "skin_persona",
+    "effect": "skin_persona",
+    "lane": "skin_persona",
+    "notes": "skin_persona",
+    "soundEffect": "skin_persona"
+   },
+   "noteSyncEdgeMargin": 0
+  },
+  {
+   "kind": "collaboration",
+   "id": 2,
+   "seasonSpecialId": 21,
+   "components": {
+    "background": "skin_miku",
+    "effect": "skin_miku",
+    "lane": "skin_miku",
+    "notes": "skin_miku",
+    "soundEffect": "skin_miku"
+   },
+   "noteSyncEdgeMargin": 0
+  },
+  {
+   "kind": "collaboration",
+   "id": 3,
+   "seasonSpecialId": 36,
+   "components": {
+    "background": "skinapril2019",
+    "effect": "skinapril2019",
+    "lane": "skinapril2019",
+    "notes": "skinapril2019",
+    "soundEffect": "skinapril2019",
+    "judge": "skinapril2019",
+    "cutIn": "skinapril2019"
+   },
+   "noteSyncEdgeMargin": 0
+  },
+  {
+   "kind": "collaboration",
+   "id": 4,
+   "seasonSpecialId": 86,
+   "components": {
+    "background": "skin_cafe",
+    "effect": "skin_cafe",
+    "lane": "skin_cafe",
+    "notes": "skin_cafe",
+    "soundEffect": "skin_cafe"
+   },
+   "noteSyncEdgeMargin": 0
+  },
+  {
+   "kind": "collaboration",
+   "id": 5,
+   "seasonSpecialId": 88,
+   "components": {
+    "background": "skin_miku",
+    "effect": "skin_miku",
+    "lane": "skin_miku",
+    "notes": "skin_miku",
+    "soundEffect": "skin_miku"
+   },
+   "noteSyncEdgeMargin": 0
+  },
+  {
+   "kind": "collaboration",
+   "id": 6,
+   "seasonSpecialId": 91,
+   "components": {
+    "background": "skin_maid",
+    "effect": "skin_maid",
+    "lane": "skin_maid",
+    "notes": "skin_maid",
+    "soundEffect": "skin_maid"
+   },
+   "noteSyncEdgeMargin": 0
+  },
+  {
+   "kind": "collaboration",
+   "id": 7,
+   "seasonSpecialId": 159,
+   "components": {
+    "background": "skin_gbp2020",
+    "lane": "skin_gbp2020"
+   },
+   "noteSyncEdgeMargin": 0
+  },
+  {
+   "kind": "collaboration",
+   "id": 8,
+   "seasonSpecialId": 160,
+   "components": {
+    "background": "skin_coin",
+    "effect": "skin_coin",
+    "lane": "skin_coin",
+    "notes": "skin_coin",
+    "soundEffect": "skin_coin"
+   },
+   "noteSyncEdgeMargin": 0
+  },
+  {
+   "kind": "collaboration",
+   "id": 9,
+   "seasonSpecialId": 161,
+   "components": {
+    "background": "skin_miku",
+    "effect": "skin_miku",
+    "lane": "skin_miku",
+    "notes": "skin_miku",
+    "soundEffect": "skin_miku"
+   },
+   "noteSyncEdgeMargin": 0
+  },
+  {
+   "kind": "collaboration",
+   "id": 10,
+   "seasonSpecialId": 167,
+   "components": {
+    "background": "skin_witch",
+    "effect": "skin_witch",
+    "lane": "skin_witch",
+    "notes": "skin_witch",
+    "soundEffect": "skin_witch"
+   },
+   "noteSyncEdgeMargin": 0
+  },
+  {
+   "kind": "collaboration",
+   "id": 11,
+   "seasonSpecialId": 207,
+   "components": {
+    "background": "skin_april2021",
+    "lane": "skin_april2021",
+    "notes": "skin_april2021",
+    "soundEffect": "skinapril2021",
+    "judge": "skinapril2021"
+   },
+   "noteSyncEdgeMargin": 0
+  },
+  {
+   "kind": "collaboration",
+   "id": 12,
+   "seasonSpecialId": 208,
+   "components": {
+    "background": "skin_stage",
+    "effect": "skin_stage",
+    "lane": "skin_stage",
+    "notes": "skin_stage",
+    "soundEffect": "skin_stage"
+   },
+   "noteSyncEdgeMargin": 0
+  },
+  {
+   "kind": "collaboration",
+   "id": 13,
+   "seasonSpecialId": 209,
+   "components": {
+    "background": "skin_gbp2020",
+    "lane": "skin_gbp2020"
+   },
+   "noteSyncEdgeMargin": 0
+  },
+  {
+   "kind": "collaboration",
+   "id": 14,
+   "seasonSpecialId": 210,
+   "components": {
+    "background": "skin_persona",
+    "effect": "skin_persona",
+    "lane": "skin_persona",
+    "notes": "skin_persona",
+    "soundEffect": "skin_persona",
+    "directionalFlick": "skin_persona"
+   },
+   "noteSyncEdgeMargin": 0
+  },
+  {
+   "kind": "collaboration",
+   "id": 15,
+   "seasonSpecialId": 219,
+   "components": {
+    "background": "skin_delta",
+    "effect": "skin_delta",
+    "lane": "skin_delta",
+    "notes": "skin_delta",
+    "soundEffect": "skin_delta"
+   },
+   "noteSyncEdgeMargin": 0
+  },
+  {
+   "kind": "collaboration",
+   "id": 16,
+   "seasonSpecialId": 227,
+   "components": {
+    "background": "skin_5th"
+   },
+   "noteSyncEdgeMargin": 0
+  },
+  {
+   "kind": "collaboration",
+   "id": 17,
+   "seasonSpecialId": 262,
+   "components": {
+    "background": "skin_bike",
+    "lane": "skin_bike",
+    "judge": "skin_bike"
+   },
+   "noteSyncEdgeMargin": 0
+  },
+  {
+   "kind": "collaboration",
+   "id": 18,
+   "seasonSpecialId": 263,
+   "components": {
+    "background": "skin_maid",
+    "effect": "skin_maid",
+    "lane": "skin_maid",
+    "notes": "skin_maid",
+    "soundEffect": "skin_maid"
+   },
+   "noteSyncEdgeMargin": 0
+  },
+  {
+   "kind": "collaboration",
+   "id": 19,
+   "seasonSpecialId": 265,
+   "components": {
+    "background": "skin_satan",
+    "lane": "skin_satan"
+   },
+   "noteSyncEdgeMargin": 0
+  },
+  {
+   "kind": "collaboration",
+   "id": 20,
+   "seasonSpecialId": 267,
+   "components": {
+    "background": "skin_gbp2020",
+    "lane": "skin_gbp2020"
+   },
+   "noteSyncEdgeMargin": 0
+  },
+  {
+   "kind": "collaboration",
+   "id": 21,
+   "seasonSpecialId": 276,
+   "components": {
+    "notes": "skin_april2018",
+    "soundEffect": "skin_april2018"
+   },
+   "noteSyncEdgeMargin": 0
+  },
+  {
+   "kind": "collaboration",
+   "id": 22,
+   "seasonSpecialId": 277,
+   "components": {
+    "background": "skin_april2019",
+    "effect": "skin_april2019",
+    "lane": "skin_april2019",
+    "notes": "skin_april2019",
+    "soundEffect": "skin_april2019",
+    "judge": "skin_april2019"
+   },
+   "noteSyncEdgeMargin": 0
+  },
+  {
+   "kind": "collaboration",
+   "id": 23,
+   "seasonSpecialId": 278,
+   "components": {
+    "background": "skin_april2021",
+    "lane": "skin_april2021",
+    "notes": "skin_april2021",
+    "soundEffect": "skinapril2021",
+    "judge": "skinapril2021"
+   },
+   "noteSyncEdgeMargin": 0
+  },
+  {
+   "kind": "collaboration",
+   "id": 24,
+   "seasonSpecialId": 279,
+   "components": {
+    "background": "skin_collabo23_summer_g",
+    "lane": "collabo23_summer_g",
+    "notes": "collabo23_summer_g"
+   },
+   "noteSyncEdgeMargin": 0
+  },
+  {
+   "kind": "collaboration",
+   "id": 25,
+   "seasonSpecialId": 283,
+   "components": {
+    "background": "skin_collabo23_winter_d",
+    "effect": "skin_delta",
+    "lane": "skin_delta",
+    "notes": "skin_delta",
+    "soundEffect": "skin_delta"
+   },
+   "noteSyncEdgeMargin": 0
+  },
+  {
+   "kind": "collaboration",
+   "id": 26,
+   "seasonSpecialId": 284,
+   "components": {
+    "background": "skin_april_2024",
+    "lane": "skin_april_2024",
+    "notes": "skin_april_2024"
+   },
+   "noteSyncEdgeMargin": 0
+  },
+  {
+   "kind": "collaboration",
+   "id": 27,
+   "seasonSpecialId": 285,
+   "components": {
+    "background": "skin_satan",
+    "lane": "skin_satan"
+   },
+   "noteSyncEdgeMargin": 0
+  },
+  {
+   "kind": "collaboration",
+   "id": 28,
+   "seasonSpecialId": 286,
+   "components": {
+    "background": "skin_collabo24_autumn_i",
+    "lane": "skin_collabo24_autumn_i",
+    "notes": "skin_collabo24_autumn_i"
+   },
+   "noteSyncEdgeMargin": 0
+  },
+  {
+   "kind": "collaboration",
+   "id": 29,
+   "seasonSpecialId": 291,
+   "components": {
+    "background": "skin_stage",
+    "effect": "skin_stage",
+    "lane": "skin_stage",
+    "notes": "skin_stage",
+    "soundEffect": "skin_stage"
+   },
+   "noteSyncEdgeMargin": 0
+  },
+  {
+   "kind": "collaboration",
+   "id": 30,
+   "seasonSpecialId": 293,
+   "components": {
+    "background": "skin_collabo25_autumn_s",
+    "lane": "skin_collabo25_autumn_s",
+    "notes": "skin_collabo25_autumn_s"
+   },
+   "noteSyncEdgeMargin": 0
+  },
+  {
+   "kind": "limited",
+   "id": 1,
+   "name": "エイプリルフール2018",
+   "components": {
+    "notes": "skin_april2018",
+    "soundEffect": "skin_april2018"
+   },
+   "noteSyncEdgeMargin": 0
+  },
+  {
+   "kind": "limited",
+   "id": 2,
+   "name": "エイプリルフール2019",
+   "components": {
+    "background": "skin_april2019",
+    "effect": "skin_april2019",
+    "lane": "skin_april2019",
+    "notes": "skin_april2019",
+    "soundEffect": "skin_april2019",
+    "judge": "skin_april2019"
+   },
+   "noteSyncEdgeMargin": 0
+  },
+  {
+   "kind": "limited",
+   "id": 3,
+   "name": "エイプリルフール2021",
+   "components": {
+    "background": "skin_april2021",
+    "lane": "skin_april2021",
+    "notes": "skin_april2021",
+    "soundEffect": "skinapril2021",
+    "judge": "skinapril2021"
+   },
+   "noteSyncEdgeMargin": 0
+  },
+  {
+   "kind": "limited",
+   "id": 4,
+   "name": "エイプリルフール2024",
+   "components": {
+    "background": "skin_april_2024",
+    "lane": "skin_april_2024",
+    "notes": "skin_april_2024"
+   },
+   "noteSyncEdgeMargin": 0
+  }
+ ]
+}

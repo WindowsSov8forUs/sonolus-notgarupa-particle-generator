@@ -150,10 +150,11 @@ func lz4Block(src []byte, size int) ([]byte, error) {
 }
 
 type reader struct {
-	b     []byte
-	p     int
-	order binary.ByteOrder
-	err   error
+	b         []byte
+	p         int
+	order     binary.ByteOrder
+	err       error
+	keepBytes bool // serialized reads: return byte arrays as []byte
 }
 
 func (r *reader) need(n int) bool {

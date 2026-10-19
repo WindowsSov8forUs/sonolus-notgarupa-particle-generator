@@ -9,6 +9,8 @@ import (
 	"encoding/json"
 	"math"
 	"strings"
+
+	"github.com/WindowsSov8forUs/sonolus-notgarupa-particle-generator/internal/unity"
 )
 
 type Bundle struct {
@@ -19,6 +21,8 @@ type Bundle struct {
 	Renderers map[string]RendererProfile `json:"rendererProfiles"`
 	Materials []Material                 `json:"materials"`
 	Textures  []TextureInfo              `json:"textures"`
+	// Meshes are the bundle's particle meshes by name (render mode 4).
+	Meshes map[string]*unity.Mesh `json:"-"`
 }
 
 type Vec3 struct{ X, Y, Z float64 }
@@ -60,8 +64,9 @@ type ModuleProfiles struct {
 	RotationSpeed map[string]RotationBySpeed     `json:"RotationBySpeedModule"`
 	Clamp         map[string]ClampVelocityModule `json:"ClampVelocityModule"`
 	UV            map[string]UVModule            `json:"UVModule"`
-	Velocity      map[string]json.RawMessage     `json:"VelocityModule"`
-	Force         map[string]json.RawMessage     `json:"ForceModule"`
+	Velocity      map[string]VelocityModule      `json:"VelocityModule"`
+	Force         map[string]ForceModule         `json:"ForceModule"`
+	CustomData    map[string]CustomDataModule    `json:"CustomDataModule"`
 }
 
 // Slope is a curve tangent that may be serialised as "number:±infinity".
@@ -170,7 +175,10 @@ type InitialModule struct {
 	StartColor      MinMaxGradient `json:"startColor"`
 	StartSize       MinMaxCurve    `json:"startSize"`
 	StartSizeY      MinMaxCurve    `json:"startSizeY"`
+	StartSizeZ      MinMaxCurve    `json:"startSizeZ"`
 	StartRotation   MinMaxCurve    `json:"startRotation"`
+	StartRotationX  MinMaxCurve    `json:"startRotationX"`
+	StartRotationY  MinMaxCurve    `json:"startRotationY"`
 	RandomizeRotDir float64        `json:"randomizeRotationDirection"`
 	MaxNumParticles int            `json:"maxNumParticles"`
 	Size3D          bool           `json:"size3D"`
@@ -223,19 +231,62 @@ type SizeModule struct {
 	Enabled      bool        `json:"enabled"`
 	Curve        MinMaxCurve `json:"curve"`
 	Y            MinMaxCurve `json:"y"`
+	Z            MinMaxCurve `json:"z"`
 	SeparateAxes bool        `json:"separateAxes"`
 }
 
 type RotationModule struct {
 	Enabled      bool        `json:"enabled"`
-	Curve        MinMaxCurve `json:"curve"`
+	Curve        MinMaxCurve `json:"curve"` // z
+	X            MinMaxCurve `json:"x"`
+	Y            MinMaxCurve `json:"y"`
 	SeparateAxes bool        `json:"separateAxes"`
 }
 
 type RotationBySpeed struct {
-	Enabled bool                   `json:"enabled"`
-	Curve   MinMaxCurve            `json:"curve"`
-	Range   struct{ X, Y float64 } `json:"range"`
+	Enabled      bool                   `json:"enabled"`
+	Curve        MinMaxCurve            `json:"curve"` // z
+	X            MinMaxCurve            `json:"x"`
+	Y            MinMaxCurve            `json:"y"`
+	SeparateAxes bool                   `json:"separateAxes"`
+	Range        struct{ X, Y float64 } `json:"range"`
+}
+
+// VelocityModule is Velocity over Lifetime: linear velocity, orbital
+// rotation around an offset and radial speed, all added to the motion of the
+// frame without accumulating, and a speed modifier on the total velocity.
+type VelocityModule struct {
+	Enabled        bool `json:"enabled"`
+	X, Y, Z        MinMaxCurve
+	OrbitalX       MinMaxCurve `json:"orbitalX"`
+	OrbitalY       MinMaxCurve `json:"orbitalY"`
+	OrbitalZ       MinMaxCurve `json:"orbitalZ"`
+	OrbitalOffsetX MinMaxCurve `json:"orbitalOffsetX"`
+	OrbitalOffsetY MinMaxCurve `json:"orbitalOffsetY"`
+	OrbitalOffsetZ MinMaxCurve `json:"orbitalOffsetZ"`
+	Radial         MinMaxCurve `json:"radial"`
+	SpeedModifier  MinMaxCurve `json:"speedModifier"`
+	InWorldSpace   bool        `json:"inWorldSpace"`
+}
+
+// ForceModule is Force over Lifetime: an acceleration of the base velocity.
+type ForceModule struct {
+	Enabled           bool `json:"enabled"`
+	X, Y, Z           MinMaxCurve
+	InWorldSpace      bool `json:"inWorldSpace"`
+	RandomizePerFrame bool `json:"randomizePerFrame"`
+}
+
+// CustomDataModule streams per-particle vectors to custom shaders (the
+// UV-scroll shader reads the first vector).
+type CustomDataModule struct {
+	Enabled bool        `json:"enabled"`
+	Mode0   int         `json:"mode0"` // 1 vector
+	Count0  int         `json:"vectorComponentCount0"`
+	V0      MinMaxCurve `json:"vector0_0"`
+	V1      MinMaxCurve `json:"vector0_1"`
+	V2      MinMaxCurve `json:"vector0_2"`
+	V3      MinMaxCurve `json:"vector0_3"`
 }
 
 type ClampVelocityModule struct {
@@ -270,7 +321,10 @@ type RendererProfile struct {
 	VelocityScale float64 `json:"m_VelocityScale"`
 	SortingOrder  int     `json:"m_SortingOrder"`
 	Pivot         Vec3    `json:"m_Pivot"`
-	Materials     []*struct {
+	// Mesh is the mesh of render mode 4: meshQuad for Unity's built-in Quad,
+	// otherwise the name of a mesh of the bundle.
+	Mesh      string `json:"mesh,omitempty"`
+	Materials []*struct {
 		Name string `json:"name"`
 	} `json:"m_Materials"`
 }
@@ -284,6 +338,8 @@ type Material struct {
 	Fragment         string                 `json:"fragment"`
 	TextureScale     struct{ X, Y float64 } `json:"mainTextureScale"`
 	TextureOffset    struct{ X, Y float64 } `json:"mainTextureOffset"`
+	// UVScroll: the UV-scroll shader adds custom vector 0 (y, x) to the UVs.
+	UVScroll bool `json:"uvScroll,omitempty"`
 }
 
 type TextureInfo struct {

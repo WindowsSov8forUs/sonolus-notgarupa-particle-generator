@@ -12,10 +12,15 @@ type system struct {
 	color    *ColorModule
 	size     *SizeModule
 	rotation *RotationModule
+	bySpeed  *RotationBySpeed
 	clamp    *ClampVelocityModule
 	uv       *UVModule
+	velocity *VelocityModule
+	force    *ForceModule
+	custom   *CustomDataModule
 	renderer *RendererProfile
 	material *Material
+	mesh     *meshInfo // render mode 4
 }
 
 func resolveSystem(b *Bundle, def *SystemDef) *system {
@@ -58,10 +63,29 @@ func resolveSystem(b *Bundle, def *SystemDef) *system {
 		v := b.Modules.UV[id]
 		s.uv = &v
 	}
+	if id, ok := get("RotationBySpeedModule"); ok {
+		v := b.Modules.RotationSpeed[id]
+		s.bySpeed = &v
+	}
+	if id, ok := get("VelocityModule"); ok {
+		v := b.Modules.Velocity[id]
+		s.velocity = &v
+	}
+	if id, ok := get("ForceModule"); ok {
+		v := b.Modules.Force[id]
+		s.force = &v
+	}
+	if id, ok := get("CustomDataModule"); ok {
+		v := b.Modules.CustomData[id]
+		s.custom = &v
+	}
 	if r, ok := b.Renderers[p.Renderer]; ok {
 		s.renderer = &r
 		if len(r.Materials) > 0 && r.Materials[0] != nil {
 			s.material = b.material(r.Materials[0].Name)
+		}
+		if r.RenderMode == 4 {
+			s.mesh = &meshInfo{name: r.Mesh, geometry: b.Meshes[r.Mesh]}
 		}
 	}
 	return s
@@ -84,6 +108,12 @@ type particleParams struct {
 	clampR      float64
 	gravityR    float64
 	frameR      float64
+	// 3D extensions (unused by systems without the matching modules)
+	rot0X, rot0Y float64    // start rotation about X / Y (rotation3D), radians
+	size0Z       float64    // start size z (size3D)
+	moduleR      [9]float64 // velocity x, y, z, orbital x, y, z, radial, speed modifier, force
+	bySpeedR     float64
+	customR      [4]float64
 }
 
 type sample struct {
@@ -95,6 +125,10 @@ type sample struct {
 	rot   float64 // radians, Unity sign (clockwise on screen)
 	col   Color   // linear multiplier incl. alpha
 	frame int
+	// 3D extensions
+	rotX, rotY float64 // rotation about X / Y, radians
+	sizeZ      float64
+	custom     [4]float64 // custom-data vector 0
 }
 
 const simStep = 1.0 / 240
@@ -106,11 +140,15 @@ func (s *system) simulate(p particleParams, ages []float64) []sample {
 	pos := p.pos
 	vel := p.dir.mul(p.speed)
 	rot := p.rot0
+	rotX, rotY := p.rot0X, p.rot0Y
+	renderVel := vel
 	age := 0.0
 	next := 0
 	emit := func() {
 		for next < len(ages) && ages[next] <= age+1e-9 {
-			out = append(out, s.state(p, ages[next], pos, vel, rot))
+			smp := s.state(p, ages[next], pos, renderVel, rot)
+			smp.rotX, smp.rotY = rotX, rotY
+			out = append(out, smp)
 			next++
 		}
 	}
@@ -129,16 +167,96 @@ func (s *system) simulate(p particleParams, ages []float64) []sample {
 		// angular velocity
 		if s.rotation != nil && s.rotation.Enabled {
 			rot += s.rotation.Curve.eval(nAge, p.rotSpeedR) * p.rotSign * dt
+			if s.rotation.SeparateAxes {
+				rotX += s.rotation.X.eval(nAge, p.rotSpeedR) * p.rotSign * dt
+				rotY += s.rotation.Y.eval(nAge, p.rotSpeedR) * p.rotSign * dt
+			}
 		}
-		// limit velocity / drag
+		// velocity over lifetime (added to this frame's motion only), force
+		// (accelerates the base velocity), then the clamp on the sum
+		module, speedMod := s.moduleVelocity(pos, nAge, dt, p)
+		if f := s.force; f != nil && f.Enabled {
+			acc := Vec3{f.X.eval(nAge, p.moduleR[8]), f.Y.eval(nAge, p.moduleR[8]), f.Z.eval(nAge, p.moduleR[8])}
+			if f.InWorldSpace {
+				acc = s.worldToLocal(acc)
+			}
+			vel = vel.add(acc.mul(dt))
+		}
 		if c := s.clamp; c != nil && c.Enabled && (c.Dampen > 0 || c.Drag.Scalar != 0) {
-			vel = s.limitVelocity(vel, nAge, dt, p)
+			if module == (Vec3{}) {
+				vel = s.limitVelocity(vel, nAge, dt, p)
+			} else {
+				vel = s.limitVelocity(vel.add(module), nAge, dt, p).sub(module)
+			}
 		}
-		pos = pos.add(vel.mul(dt))
+		renderVel = vel
+		if module != (Vec3{}) || speedMod != 1 {
+			renderVel = vel.add(module).mul(speedMod)
+		}
+		// rotation by speed observes the effective velocity
+		if b := s.bySpeed; b != nil && b.Enabled {
+			n := 0.0
+			if b.Range.Y != b.Range.X {
+				n = math.Min(math.Max((renderVel.length()-b.Range.X)/(b.Range.Y-b.Range.X), 0), 1)
+			}
+			rot += b.Curve.eval(n, p.bySpeedR) * p.rotSign * dt
+			if b.SeparateAxes {
+				rotX += b.X.eval(n, p.bySpeedR) * p.rotSign * dt
+				rotY += b.Y.eval(n, p.bySpeedR) * p.rotSign * dt
+			}
+		}
+		pos = pos.add(renderVel.mul(dt))
 		age += dt
 		emit()
 	}
 	return out
+}
+
+// moduleVelocity is the Velocity over Lifetime contribution of one step
+// (linear, orbital and radial, emitter-local) and its speed modifier.
+func (s *system) moduleVelocity(pos Vec3, nAge, dt float64, p particleParams) (Vec3, float64) {
+	v := s.velocity
+	if v == nil || !v.Enabled {
+		return Vec3{}, 1
+	}
+	r := p.moduleR
+	lin := Vec3{v.X.eval(nAge, r[0]), v.Y.eval(nAge, r[1]), v.Z.eval(nAge, r[2])}
+	if v.InWorldSpace {
+		lin = s.worldToLocal(lin)
+	}
+	speedMod := v.SpeedModifier.eval(nAge, r[7])
+	offset := Vec3{v.OrbitalOffsetX.eval(nAge, r[3]), v.OrbitalOffsetY.eval(nAge, r[4]), v.OrbitalOffsetZ.eval(nAge, r[5])}
+	angular := Vec3{v.OrbitalX.eval(nAge, r[3]), v.OrbitalY.eval(nAge, r[4]), v.OrbitalZ.eval(nAge, r[5])}
+	radial := v.Radial.eval(nAge, r[6])
+	if angular == (Vec3{}) && radial == 0 {
+		return lin, speedMod
+	}
+	rel := pos.sub(offset)
+	step := dt * speedMod
+	rotated := rotateEuler(rel, angular.mul(step))
+	rotated = rotated.add(rotated.normalized().mul(step * radial))
+	disp := rotated.sub(rel)
+	if math.Abs(speedMod) > 1e-9 && dt > 1e-6 {
+		lin = lin.add(disp.mul(1 / speedMod / dt))
+	}
+	return lin, speedMod
+}
+
+// rotateEuler rotates v about X, then Y, then Z (radians).
+func rotateEuler(v, r Vec3) Vec3 {
+	if r.X != 0 {
+		c, s := math.Cos(r.X), math.Sin(r.X)
+		v = Vec3{v.X, v.Y*c - v.Z*s, v.Y*s + v.Z*c}
+	}
+	if r.Y != 0 {
+		c, s := math.Cos(r.Y), math.Sin(r.Y)
+		v = Vec3{v.X*c + v.Z*s, v.Y, v.Z*c - v.X*s}
+	}
+	if r.Z != 0 {
+		c, s := math.Cos(r.Z), math.Sin(r.Z)
+		v = Vec3{v.X*c - v.Y*s, v.X*s + v.Y*c, v.Z}
+	}
+	return v
 }
 
 func (s *system) worldToLocal(v Vec3) Vec3 {
@@ -189,21 +307,31 @@ func (s *system) limitVelocity(v Vec3, nAge, dt float64, p particleParams) Vec3 
 
 func (s *system) state(p particleParams, age float64, pos, vel Vec3, rot float64) sample {
 	n := math.Min(age/p.lifetime, 1)
-	sx, sy := p.size0, p.size0Y
+	sx, sy, sz3 := p.size0, p.size0Y, p.size0Z
 	if sz := s.size; sz != nil && sz.Enabled {
 		kx := sz.Curve.eval(n, p.sizeCurveR)
-		ky := kx
+		ky, kz := kx, kx
 		if sz.SeparateAxes {
 			ky = sz.Y.eval(n, p.sizeCurveR)
+			kz = sz.Z.eval(n, p.sizeCurveR)
 		}
 		sx *= kx
 		sy *= ky
+		sz3 *= kz
+	}
+	var custom [4]float64
+	if c := s.custom; c != nil && c.Enabled && c.Mode0 == 1 {
+		for k, curve := range []MinMaxCurve{c.V0, c.V1, c.V2, c.V3} {
+			if k < c.Count0 {
+				custom[k] = curve.eval(n, p.customR[k])
+			}
+		}
 	}
 	col := s.initial.StartColor.eval(0, p.startColorR)
 	if c := s.color; c != nil && c.Enabled {
 		col = mulColor(col, c.Gradient.eval(n, p.colorRatio))
 	}
-	return sample{t: age, pos: pos, vel: vel, sizeX: sx, sizeY: sy, rot: rot, col: col, frame: s.frame(n, p.frameR)}
+	return sample{t: age, pos: pos, vel: vel, sizeX: sx, sizeY: sy, sizeZ: sz3, rot: rot, col: col, frame: s.frame(n, p.frameR), custom: custom}
 }
 
 // frame returns the texture-sheet tile index (0 when there is no sheet).
@@ -257,8 +385,16 @@ func (s *system) emissions(window float64) [][2]float64 {
 		}
 		rate := s.emission.Rate.eval(0, 0.5)
 		if rate > 0 {
+			step := 1 / rate
+			// A capped system with an enormous rate (e.g. 10⁷/s with one
+			// particle that lives 20 s, i.e. one persistent particle) can only
+			// emit when a slot frees: step by the shortest lifetime per slot.
+			if rate*dur > 10000 && maxN < 1<<30 {
+				life := math.Min(s.initial.StartLifetime.eval(0, 0), s.initial.StartLifetime.eval(0, 1))
+				step = math.Max(step, life/float64(maxN))
+			}
 			for k := 0; ; k++ {
-				t := float64(k) / rate
+				t := float64(k) * step
 				if t >= dur {
 					break
 				}

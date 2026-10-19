@@ -38,6 +38,17 @@ type spriteKey struct {
 	blend   string // "additive" | "premultiplied" | "alpha"
 }
 
+// projection is how a system's particles map to Sonolus rectangles.
+type projection int
+
+const (
+	projBillboard projection = iota // view or lane-plane billboard
+	projStretched                   // stretched billboard
+	projQuadMesh                    // built-in Quad mesh spinning in its plane
+	projQuad3D                      // billboard or Quad with a 3D rotation
+	projRaster                      // rasterised mesh
+)
+
 type outParticle struct {
 	sprite     spriteKey
 	color      string
@@ -96,9 +107,22 @@ func lowDiscrepancy(index int) strataDims {
 	return d
 }
 
-// planeTilt returns the tilt (degrees about X) of a lane-plane system, or ok=false.
+// planeTilt returns the tilt (degrees about X, in (−180, 180]) of a
+// lane-plane system, or ok=false. A Quad mesh adds its constant start tilt.
 func planeTilt(s *system) (float64, bool) {
-	if s.renderer == nil || s.renderer.Alignment != 2 {
+	// stretched billboards always face the camera along their velocity:
+	// render alignment does not apply to them
+	if s.renderer == nil || s.renderer.Alignment != 2 || s.renderer.RenderMode == 1 || s.isRaster() {
+		return 0, false
+	}
+	meshRX := 0.0
+	if s.isQuadMesh() {
+		rx, ok := s.meshTilt()
+		if !ok {
+			return 0, false
+		}
+		meshRX = rx
+	} else if s.rotates3D() {
 		return 0, false
 	}
 	q := s.def.Transform.Rotation
@@ -110,7 +134,39 @@ func planeTilt(s *system) (float64, bool) {
 	if math.Abs(q.Y) > 1e-3 || math.Abs(q.Z) > 1e-3 {
 		return 0, false
 	}
-	return math.Round(2 * math.Atan2(q.X, q.W) / degToRad), true
+	deg := math.Round((2*math.Atan2(q.X, q.W) + meshRX) / degToRad)
+	deg = math.Mod(deg, 360)
+	switch {
+	case deg > 180:
+		deg -= 360
+	case deg <= -180:
+		deg += 360
+	}
+	return deg, true
+}
+
+// projectionOf picks how a system is drawn (ok=false: not drawable).
+func projectionOf(s *system, planeDeg float64) (projection, string) {
+	switch s.renderer.RenderMode {
+	case 0:
+		if planeDeg == 0 && s.rotates3D() {
+			return projQuad3D, ""
+		}
+		return projBillboard, ""
+	case 1:
+		return projStretched, ""
+	case 4:
+		switch {
+		case s.isRaster() && s.mesh.geometry != nil:
+			return projRaster, ""
+		case s.isRaster():
+			return -1, "mesh geometry not decoded"
+		case planeDeg != 0 || !s.rotates3D():
+			return projQuadMesh, ""
+		}
+		return projQuad3D, ""
+	}
+	return -1, fmt.Sprintf("render mode %d not supported", s.renderer.RenderMode)
 }
 
 // convertSystem appends groups for one Unity system to the part.
@@ -128,11 +184,12 @@ func convertSystem(pt *part, s *system, o convertOptions, steady bool) error {
 	if s.uv != nil && s.uv.Enabled {
 		tilesX, tilesY = s.uv.TilesX, s.uv.TilesY
 	}
-	stretched := s.renderer.RenderMode == 1
-	if s.renderer.RenderMode != 0 && !stretched {
-		pt.notes = append(pt.notes, fmt.Sprintf("%s: render mode %d not supported, skipped", s.def.Path, s.renderer.RenderMode))
+	mode, why := projectionOf(s, pt.planeDeg)
+	if mode < 0 {
+		pt.notes = append(pt.notes, fmt.Sprintf("%s: %s, skipped", s.def.Path, why))
 		return nil
 	}
+	stretched := mode == projStretched
 	cosT := 1.0
 	if pt.planeDeg != 0 {
 		cosT = math.Cos(pt.planeDeg * degToRad)
@@ -143,7 +200,9 @@ func convertSystem(pt *part, s *system, o convertOptions, steady bool) error {
 	box := s.shape != nil && s.shape.Enabled && s.shape.Type == 5
 	sizeCoupled := s.clamp != nil && s.clamp.Enabled && s.clamp.DragBySize
 	linearSize := init.StartSize.isRandom() && !sizeCoupled && !init.Size3D
-	linearRot := init.StartRotation.isRandom() && !stretched
+	pivot := s.renderer.Pivot
+	meshPivot := (mode == projQuadMesh || mode == projQuad3D && s.isQuadMesh()) && pivot.X*pivot.X+pivot.Y*pivot.Y > 1e-10
+	linearRot := init.StartRotation.isRandom() && !stretched && mode != projQuad3D && mode != projRaster && !meshPivot
 
 	period := s.prof.System.LengthInSec
 	window := pt.duration
@@ -198,7 +257,7 @@ func convertSystem(pt *part, s *system, o convertOptions, steady bool) error {
 				dims.azimuth = a - math.Floor(a)
 			}
 			global++
-			g, life, err := buildGroup(s, pt, o, dims, birth, linearAzimuth, box, linearSize, linearRot, stretched, cosT, spriteKey{bundle: pt.bundle, texture: tex, tilesX: tilesX, tilesY: tilesY, blend: blend})
+			g, life, err := buildGroup(s, pt, o, dims, birth, linearAzimuth, box, linearSize, linearRot, mode, cosT, spriteKey{bundle: pt.bundle, texture: tex, tilesX: tilesX, tilesY: tilesY, blend: blend})
 			if err != nil {
 				return err
 			}
@@ -226,7 +285,7 @@ type variant struct {
 }
 
 func buildGroup(s *system, pt *part, o convertOptions, d strataDims, birth float64,
-	linearAzimuth, box, linearSize, linearRot, stretched bool, cosT float64, sk spriteKey) (*outGroup, float64, error) {
+	linearAzimuth, box, linearSize, linearRot bool, mode projection, cosT float64, sk spriteKey) (*outGroup, float64, error) {
 	init := s.initial
 	v := d.values
 	base := particleParams{
@@ -243,6 +302,16 @@ func buildGroup(s *system, pt *part, o convertOptions, d strataDims, birth float
 	}
 	if init.RandomizeRotDir > 0 && v[8] < init.RandomizeRotDir {
 		base.rotSign = -1
+	}
+	// further random inputs of the 3D modules, derived from the stratum's
+	// draws (they leave the original inputs untouched)
+	frac := func(x float64) float64 { return x - math.Floor(x) }
+	for k := range base.moduleR {
+		base.moduleR[k] = frac(v[(k+2)%11]*0.754877666 + v[(k+5)%11]*0.569840291)
+	}
+	base.bySpeedR = frac(v[5]*0.381966 + v[2]*0.618034)
+	for k := range base.customR {
+		base.customR[k] = frac(v[(k+3)%11]*0.414213562 + v[(k+7)%11]*0.732050808)
 	}
 	sizeR := v[9]
 	rotR := v[10]
@@ -286,12 +355,19 @@ func buildGroup(s *system, pt *part, o convertOptions, d strataDims, birth float
 	}
 
 	life := base.lifetime
-	ages := denseAges(life)
+	sampled := life
+	if life > 60 {
+		// a persistent particle (e.g. lifetime 100000 s): sample only the
+		// part inside the effect window
+		sampled = math.Min(life, math.Max(pt.duration-birth, 0)+0.05)
+	}
+	ages := denseAges(sampled)
 	// evaluate every variant → per age the 6 output quantities
 	type evaluated struct {
-		q      [][6]float64
-		frames []int
-		cols   []Color
+		q       [][6]float64
+		frames  []int
+		cols    []Color
+		rasters []string
 	}
 	evals := make([]evaluated, len(variants))
 	for vi, va := range variants {
@@ -306,12 +382,22 @@ func buildGroup(s *system, pt *part, o convertOptions, d strataDims, birth float
 			p.size0Y = math.Max(0, init.StartSizeY.eval(birth, va.sizeR))
 		}
 		p.rot0 = init.StartRotation.eval(birth, va.rotR)
+		if init.Rotation3D {
+			p.rot0X = init.StartRotationX.eval(birth, va.rotR)
+			p.rot0Y = init.StartRotationY.eval(birth, va.rotR)
+		}
+		p.size0Z = p.size0
+		if init.Size3D {
+			p.size0Z = math.Max(0, init.StartSizeZ.eval(birth, va.sizeR))
+		}
 		samples := s.simulate(p, ages)
 		e := evaluated{}
 		for _, smp := range samples {
-			e.q = append(e.q, project(s, smp, stretched, cosT))
+			q, raster := project(s, smp, mode, cosT, pt.bundle)
+			e.q = append(e.q, q)
 			e.frames = append(e.frames, smp.frame)
 			e.cols = append(e.cols, smp.col)
+			e.rasters = append(e.rasters, raster)
 		}
 		evals[vi] = e
 	}
@@ -358,7 +444,7 @@ func buildGroup(s *system, pt *part, o convertOptions, d strataDims, birth float
 		cuts[nearestIndex(ages, kt*life)] = true
 	}
 	for i := 1; i < n; i++ {
-		if evals[0].frames[i] != evals[0].frames[i-1] {
+		if evals[0].frames[i] != evals[0].frames[i-1] || evals[0].rasters[i] != evals[0].rasters[i-1] {
 			cuts[i] = true
 		}
 	}
@@ -375,6 +461,12 @@ func buildGroup(s *system, pt *part, o convertOptions, d strataDims, birth float
 		col := evals[0].cols[mid]
 		key := sk
 		key.frame = evals[0].frames[mid]
+		if r := evals[0].rasters[mid]; r != "" {
+			key.texture, key.frame, key.tilesX, key.tilesY = r, 0, 1, 1
+			if key.blend != "additive" {
+				key.blend = "alpha"
+			}
+		}
 		start, end := birth+ages[a], birth+ages[b]
 		if end <= 0 || start >= pt.duration || end-start < 1e-6 {
 			continue
@@ -417,14 +509,39 @@ func buildGroup(s *system, pt *part, o convertOptions, d strataDims, birth float
 }
 
 // project maps an emitter-local sample to effect coordinates (particle units,
-// y up) and returns x, y, w (half width), h (half height), r (radians CCW), a.
-func project(s *system, smp sample, stretched bool, cosT float64) [6]float64 {
+// y up) and returns x, y, w (half width), h (half height), r (radians CCW), a,
+// and the raster sprite of a rasterised mesh.
+func project(s *system, smp sample, mode projection, cosT float64, bundle string) ([6]float64, string) {
 	scale := math.Abs(s.def.Transform.Scale.X)
 	for _, p := range s.def.ParentTransforms {
 		scale *= math.Abs(p.Scale.X)
 	}
 	head := s.def.point(smp.pos)
-	if stretched {
+	switch mode {
+	case projQuadMesh:
+		// in-plane spin turns counter-clockwise; the pivot moves with it
+		x, y := head.X, head.Y/cosT
+		if pv := s.renderer.Pivot; pv.X != 0 || pv.Y != 0 {
+			px, py := pv.X*smp.sizeX*scale, pv.Y*smp.sizeY*scale
+			c, sn := math.Cos(smp.rot), math.Sin(smp.rot)
+			x, y = x+px*c-py*sn, y+px*sn+py*c
+		}
+		return [6]float64{x, y, smp.sizeX * scale / 2, smp.sizeY * scale / 2, smp.rot, smp.col.A}, ""
+	case projQuad3D:
+		u, v := s.quadAxes(smp, scale)
+		x, y := head.X, head.Y
+		if pv := s.renderer.Pivot; s.isQuadMesh() && (pv.X != 0 || pv.Y != 0) {
+			off := u.mul(2 * pv.X).add(v.mul(2 * pv.Y))
+			x, y = x+off.X, y+off.Y
+		}
+		w, h, r := rectOf(u, v)
+		return [6]float64{x, y, w, h, r, smp.col.A}, ""
+	case projRaster:
+		key, g := s.rasterFor(bundle, smp)
+		k := smp.sizeX * scale
+		return [6]float64{head.X + k*(g[0]+g[2])/2, head.Y + k*(g[1]+g[3])/2, k * (g[2] - g[0]) / 2, k * (g[3] - g[1]) / 2, 0, smp.col.A}, key
+	}
+	if mode == projStretched {
 		v := s.def.vector(smp.vel)
 		speed := v.length()
 		length := smp.sizeX*scale*s.renderer.LengthScale + speed*s.renderer.VelocityScale
@@ -437,9 +554,9 @@ func project(s *system, smp sample, stretched bool, cosT float64) [6]float64 {
 		dx, dy := tail.X-head.X, (tail.Y-head.Y)/cosT
 		half := math.Hypot(dx, dy) / 2
 		r := math.Atan2(dy, dx)
-		return [6]float64{cx, cy, half, smp.sizeX * scale / 2, r, smp.col.A}
+		return [6]float64{cx, cy, half, smp.sizeX * scale / 2, r, smp.col.A}, ""
 	}
-	return [6]float64{head.X, head.Y / cosT, smp.sizeX * scale / 2, smp.sizeY * scale / 2, -smp.rot, smp.col.A}
+	return [6]float64{head.X, head.Y / cosT, smp.sizeX * scale / 2, smp.sizeY * scale / 2, -smp.rot, smp.col.A}, ""
 }
 
 func keyTimes(s *system) []float64 {

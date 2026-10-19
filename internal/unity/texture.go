@@ -9,6 +9,7 @@ import (
 
 // Texture formats this package decodes.
 const (
+	FormatRGB24      = 3
 	FormatRGBA32     = 4
 	FormatETCRGB4    = 34 // ETC1
 	FormatETC2RGBA8  = 47 // ETC2 RGB + EAC alpha
@@ -56,6 +57,16 @@ func DecodeTexture(f *File, files map[string][]byte, pathID int64) (*image.NRGBA
 			for x := 0; x < width; x++ {
 				p := (y*width + x) * 4
 				set(x, y, [4]uint8{data[p], data[p+1], data[p+2], data[p+3]})
+			}
+		}
+	case FormatRGB24:
+		if len(data) < width*height*3 {
+			return nil, fmt.Errorf("texture %d: RGB24 data too short", pathID)
+		}
+		for y := 0; y < height; y++ {
+			for x := 0; x < width; x++ {
+				p := (y*width + x) * 3
+				set(x, y, [4]uint8{data[p], data[p+1], data[p+2], 255})
 			}
 		}
 	case FormatETCRGB4, FormatETC2RGBA8:

@@ -10,11 +10,13 @@ import (
 	"encoding/hex"
 	"fmt"
 	"image"
+	"sync"
 
 	"github.com/WindowsSov8forUs/sonolus-notgarupa-particle-generator/internal/imgutil"
 )
 
 type textureStore struct {
+	mu     sync.Mutex
 	images map[string]*image.NRGBA // content id → image
 	ids    map[string]string       // bundle:texture → content id
 	// Per-bundle texture sources, by material texture name.
@@ -25,11 +27,24 @@ func newTextureStore() *textureStore {
 	return &textureStore{images: map[string]*image.NRGBA{}, ids: map[string]string{}, sources: map[string]textureSource{}}
 }
 
-// addBundle registers the texture source of a bundle key.
-func (t *textureStore) addBundle(key string, src textureSource) { t.sources[key] = src }
+// addBundle registers the texture source of a bundle key; the bundle's
+// rasterised mesh sprites ("raster:…") render from its textures.
+func (t *textureStore) addBundle(key string, src textureSource) {
+	t.mu.Lock()
+	defer t.mu.Unlock()
+	raster := rasterSource(t, key)
+	t.sources[key] = func(name string) (*image.NRGBA, error) {
+		if isRasterName(name) {
+			return raster(name)
+		}
+		return src(name)
+	}
+}
 
 // addGameClear registers the game-clear textures (asset key → PNG file).
 func (t *textureStore) addGameClear(files map[string]string) {
+	t.mu.Lock()
+	defer t.mu.Unlock()
 	t.sources["gameclear"] = func(name string) (*image.NRGBA, error) {
 		f, ok := files[name]
 		if !ok {
@@ -46,13 +61,18 @@ func (t *textureStore) addGameClear(files map[string]string) {
 // get returns the content id and image of a bundle's texture.
 func (t *textureStore) get(bundle, name string) (string, *image.NRGBA, error) {
 	ref := bundle + ":" + name
+	t.mu.Lock()
 	if id, ok := t.ids[ref]; ok {
-		return id, t.images[id], nil
+		img := t.images[id]
+		t.mu.Unlock()
+		return id, img, nil
 	}
 	src, ok := t.sources[bundle]
+	t.mu.Unlock()
 	if !ok {
 		return "", nil, fmt.Errorf("no texture source for bundle %s", bundle)
 	}
+	// decode outside the lock (raster sources read other textures)
 	img, err := src(name)
 	if err != nil {
 		return "", nil, fmt.Errorf("%s: %w", ref, err)
@@ -61,6 +81,8 @@ func (t *textureStore) get(bundle, name string) (string, *image.NRGBA, error) {
 	fmt.Fprintf(h, "%dx%d:", img.Rect.Dx(), img.Rect.Dy())
 	h.Write(img.Pix)
 	id := hex.EncodeToString(h.Sum(nil))
+	t.mu.Lock()
+	defer t.mu.Unlock()
 	if _, ok := t.images[id]; !ok {
 		t.images[id] = img
 	}

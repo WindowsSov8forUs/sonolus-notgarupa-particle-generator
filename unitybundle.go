@@ -22,6 +22,7 @@ const (
 	classTransform  = 4
 	classMaterial   = 21
 	classTexture2D  = 28
+	classMesh       = 43
 	classShader     = 48
 	classParticle   = 198
 	classRenderer   = 199
@@ -31,7 +32,21 @@ const (
 // by path ID (the bundles only reference them).
 var builtinShaders = map[string]string{
 	"Resources/unity_builtin_extra#10720": "Mobile/Particles/Additive",
+	// The tap-effect materials named "…alpha" use it where their "…add"
+	// twins on the same texture use 10720.
+	"Resources/unity_builtin_extra#10721": "Mobile/Particles/Alpha Blended",
 }
+
+// builtinQuad is Unity's built-in Quad mesh (1×1 in the XY plane, facing −Z),
+// the mesh of most mesh-mode particles.
+const builtinQuad = "Library/unity default resources#10210"
+
+// meshQuad marks a renderer that draws the built-in Quad.
+const meshQuad = "#quad"
+
+// uvScrollShader adds the first custom-data vector (y, x) to the UVs; its
+// blend comes from the material's _BlendSrc / _BlendDst.
+const uvScrollShader = "star/Customdata_CurveUVScroll"
 
 // shaderBlend is the fixed blend of a particle shader (source, destination
 // factor: 1 One, 5 SrcAlpha, 10 OneMinusSrcAlpha). Shaders with a
@@ -41,11 +56,12 @@ var shaderBlend = map[string][2]int{
 	"Legacy Shaders/Particles/Additive":                  {5, 1},
 	"Legacy Shaders/Particles/Alpha Blended":             {5, 10},
 	"Legacy Shaders/Particles/Alpha Blended Premultiply": {1, 10},
+	"Mobile/Particles/Alpha Blended":                     {5, 10},
 }
 
 // modules the converter reads; a module is part of a system only when enabled.
 var unityModules = []string{"InitialModule", "EmissionModule", "ShapeModule", "ColorModule", "SizeModule",
-	"RotationModule", "RotationBySpeedModule", "ClampVelocityModule", "UVModule", "VelocityModule", "ForceModule"}
+	"RotationModule", "RotationBySpeedModule", "ClampVelocityModule", "UVModule", "VelocityModule", "ForceModule", "CustomDataModule"}
 
 type pptr struct {
 	file int
@@ -179,7 +195,7 @@ func buildBundle(data []byte, key string) (*Bundle, map[string]bool, *unity.File
 	for _, id := range f.Order {
 		class := f.Objects[id].ClassID
 		switch class {
-		case classGameObject, classTransform, classMaterial, classTexture2D, classShader, classParticle, classRenderer:
+		case classGameObject, classTransform, classMaterial, classTexture2D, classShader, classParticle, classRenderer, classMesh:
 		default:
 			continue
 		}
@@ -248,7 +264,8 @@ func buildBundle(data []byte, key string) (*Bundle, map[string]bool, *unity.File
 	b.Modules = ModuleProfiles{Initial: map[string]InitialModule{}, Emission: map[string]EmissionModule{}, Shape: map[string]ShapeModule{},
 		Color: map[string]ColorModule{}, Size: map[string]SizeModule{}, Rotation: map[string]RotationModule{},
 		RotationSpeed: map[string]RotationBySpeed{}, Clamp: map[string]ClampVelocityModule{}, UV: map[string]UVModule{},
-		Velocity: map[string]json.RawMessage{}, Force: map[string]json.RawMessage{}}
+		Velocity: map[string]VelocityModule{}, Force: map[string]ForceModule{}, CustomData: map[string]CustomDataModule{}}
+	b.Meshes = map[string]*unity.Mesh{}
 	inactive := map[string]bool{}
 	materialName := func(p pptr) string {
 		if p.file != 0 || p.id == 0 {
@@ -327,14 +344,18 @@ func buildBundle(data []byte, key string) (*Bundle, map[string]bool, *unity.File
 				var v UVModule
 				err = decodeInto(m, &v)
 				b.Modules.UV[path] = v
-			case "VelocityModule", "ForceModule":
-				raw, e := json.Marshal(jsonSafe(m))
-				err = e
-				if name == "VelocityModule" {
-					b.Modules.Velocity[path] = raw
-				} else {
-					b.Modules.Force[path] = raw
-				}
+			case "VelocityModule":
+				var v VelocityModule
+				err = decodeInto(m, &v)
+				b.Modules.Velocity[path] = v
+			case "ForceModule":
+				var v ForceModule
+				err = decodeInto(m, &v)
+				b.Modules.Force[path] = v
+			case "CustomDataModule":
+				var v CustomDataModule
+				err = decodeInto(m, &v)
+				b.Modules.CustomData[path] = v
 			}
 			if err != nil {
 				return nil, nil, nil, nil, fmt.Errorf("%s %s: %w", path, name, err)
@@ -346,6 +367,22 @@ func buildBundle(data []byte, key string) (*Bundle, map[string]bool, *unity.File
 				VelocityScale: num(r, "m_VelocityScale"), SortingOrder: int(num(r, "m_SortingOrder"))}
 			if err := decodeInto(r["m_Pivot"], &rp.Pivot); err != nil {
 				return nil, nil, nil, nil, err
+			}
+			if rp.RenderMode == 4 {
+				mp := toPPtr(r["m_Mesh"])
+				switch {
+				case mp.file > 0 && mp.file-1 < len(f.Externals) && fmt.Sprintf("%s#%d", f.Externals[mp.file-1], mp.id) == builtinQuad:
+					rp.Mesh = meshQuad
+				case mp.file == 0 && mp.id != 0:
+					mesh, err := unity.DecodeMesh(f, files, mp.id)
+					if err != nil {
+						return nil, nil, nil, nil, fmt.Errorf("%s: %w", path, err)
+					}
+					rp.Mesh = mesh.Name
+					b.Meshes[mesh.Name] = mesh
+				default:
+					return nil, nil, nil, nil, fmt.Errorf("%s: unsupported particle mesh %v", path, mp)
+				}
 			}
 			mats, _ := r["m_Materials"].([]any)
 			for _, m := range mats {
@@ -393,15 +430,20 @@ func buildBundle(data []byte, key string) (*Bundle, map[string]bool, *unity.File
 			_ = decodeInto(env["m_Offset"], &mat.TextureOffset)
 		}
 		blend, fixed := shaderBlend[mat.Shader]
+		mat.UVScroll = mat.Shader == uvScrollShader
+		srcKey, dstKey := "_SrcBlend", "_DstBlend"
+		if mat.UVScroll {
+			srcKey, dstKey = "_BlendSrc", "_BlendDst"
+		}
 		floats, _ := props["m_Floats"].([]any)
 		for _, e := range floats {
 			pair, _ := e.(map[string]any)
 			switch pair["first"] {
-			case "_SrcBlend":
+			case srcKey:
 				if !fixed {
 					blend[0] = int(pair["second"].(float64))
 				}
-			case "_DstBlend":
+			case dstKey:
 				if !fixed {
 					blend[1] = int(pair["second"].(float64))
 				}

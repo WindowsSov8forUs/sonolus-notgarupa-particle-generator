@@ -170,13 +170,19 @@ func Parse(data []byte) (*File, error) {
 // except 64-bit integers (path IDs), which stay int64 / uint64 to remain
 // exact; arrays become []any and structures map[string]any; byte arrays and
 // typeless data are skipped (their length is kept as {"bytes": n}).
-func (f *File) Read(pathID int64) (map[string]any, error) {
+func (f *File) Read(pathID int64) (map[string]any, error) { return f.read(pathID, false) }
+
+// ReadFull is Read but keeps byte arrays and typeless data as []byte (mesh
+// vertex and index buffers).
+func (f *File) ReadFull(pathID int64) (map[string]any, error) { return f.read(pathID, true) }
+
+func (f *File) read(pathID int64, keepBytes bool) (map[string]any, error) {
 	o, ok := f.Objects[pathID]
 	if !ok {
 		return nil, fmt.Errorf("no object %d", pathID)
 	}
 	nodes := f.types[o.typ].nodes
-	r := &reader{b: f.data, order: f.order, p: o.offset}
+	r := &reader{b: f.data, order: f.order, p: o.offset, keepBytes: keepBytes}
 	v := readNode(r, nodes, 0)
 	if r.err != nil {
 		return nil, fmt.Errorf("object %d: %w", pathID, r.err)
@@ -243,8 +249,11 @@ func readNode(r *reader, nodes []typeNode, i int) any {
 	}
 	if n.typ == "TypelessData" {
 		size := int(int32(r.u32()))
-		r.bytes(size)
+		b := r.bytes(size)
 		r.align(4)
+		if r.keepBytes {
+			return append([]byte(nil), b...)
+		}
 		return map[string]any{"bytes": float64(size)}
 	}
 	if nodes[ch[0]].typ == "Array" {
@@ -258,8 +267,12 @@ func readNode(r *reader, nodes []typeNode, i int) any {
 		elem := ach[1]
 		var out any
 		if (nodes[elem].typ == "UInt8" || nodes[elem].typ == "char") && len(children(nodes, elem)) == 0 {
-			r.bytes(size)
-			out = map[string]any{"bytes": float64(size)}
+			b := r.bytes(size)
+			if r.keepBytes {
+				out = append([]byte(nil), b...)
+			} else {
+				out = map[string]any{"bytes": float64(size)}
+			}
 		} else {
 			list := make([]any, size)
 			for k := range list {
