@@ -466,7 +466,15 @@ func assemble(spec master.Particle, parts, extra []*part, store *textureStore, t
 	spriteIndex := func(k spriteKey) int { key, _ := canonical(k); return index[key] }
 	var meta []ContractEffect
 	byName := map[string]resource.ParticleDataEffect{}
+	var canonErr error
 	add := func(pt *part) {
+		pt, err := canonicalPart(pt)
+		if err != nil {
+			if canonErr == nil {
+				canonErr = err
+			}
+			return
+		}
 		e := pt.toSonolus(spriteIndex)
 		data.Effects = append(data.Effects, e)
 		byName[pt.name] = e
@@ -511,6 +519,9 @@ func assemble(spec master.Particle, parts, extra []*part, store *textureStore, t
 	}
 	for _, pt := range extra {
 		add(pt)
+	}
+	if canonErr != nil {
+		return nil, canonErr
 	}
 
 	texture, err := packed.EncodeTexture()

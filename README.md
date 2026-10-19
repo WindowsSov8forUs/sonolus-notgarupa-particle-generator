@@ -79,7 +79,21 @@ Sonolus 粒子是只做线性插值、只有线性随机输入的旋转矩形，
 
 `<out>/contracts/<条目>.json` 列出该条目的每个效果：`name`、`prefab`、`duration`、`loop`、`planeDeg` 与 `quadScale`（平面效果的纵向压缩 cos）、`groups`、`particles`、`systems`、`notes`（跳过的系统与原因）、HABAHIRO 宽度变体的 `width`、烟花的 `clear`。
 
-不同 tap effect 的平面倾角不同（44°–64°、−65° 等），所以各条目的效果名集合不同：全部条目的效果名并集为 186 个（普通条目 96 个，HABAHIRO 条目 129 个）。引擎需要声明并集，并在条目没有某个名字时跳过（Sonolus 的 `Exists()`）。
+不同 tap effect 的平面倾角不同（44°–64°、−65° 等），所以各条目的效果名集合不同：全部条目的效果名并集为 186 个（普通条目 96 个，HABAHIRO 条目 129 个），有的条目某个 prefab 只有平面部分、没有面向屏幕的部分。引擎声明并集，初始化时用 `Exists()` 记下当前条目有哪些部分（每个 prefab 最多两个平面部分）。
+
+### 统一时长
+
+Sonolus 粒子效果中的粒子时间是生成时长的比例，引擎读不到条目元数据，所以同一族效果在所有条目中使用同一个时长（`canonical.go`，引擎的 `dur*` 常量与之一致）：
+
+| 族（含宽度变体与平面部分） | 时长 |
+|---|---|
+| `effect_tap`、`effect_tap_good`、`effect_tap_skill_good` | 0.8 s |
+| `effect_tap_great`、`effect_tap_skill_great` | 0.85 s |
+| `effect_tap_perfect`、`effect_tap_skill_perfect`、`effect_tap_swipe` | 1 s |
+| `effect_TapKeep`（循环） | 1 s，平面部分 18 s |
+| 方向键 `effect_tap_directional_flick_l/r`、`_2`、`_3`、`_finger` | 0.7 s、1.1 s、1.1 s、0.35 s |
+
+一次性效果取该族在全部 tap effect 中最长的时长，较短的效果时间不变、提前结束；循环效果取各周期的公倍数（TapKeep 平面部分的周期为 1、6、9 s），较短的周期重复。某个效果超过该族时长或周期不能整除时生成失败，需要同时修改 `canonical.go` 与引擎常量。烟花在所有条目中相同，保留原时长。
 
 ## 烟花
 
