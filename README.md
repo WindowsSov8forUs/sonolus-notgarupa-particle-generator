@@ -1,6 +1,6 @@
 # sonolus-notgarupa-particle-generator
 
-把原作的判定粒子 prefab（tap effect 与方向键特效，Unity ParticleSystem 参数）以及通关 / Full Combo / All Perfect 烟花转换为 Sonolus 粒子包。默认运行即生成 NotGarupa 需要的**全部**粒子条目，没有按条目选择的参数。每个 prefab 输出一个面向屏幕的效果，以及每个 lane 平面倾角一个 `<prefab>#plane<角度>` 效果（四边形纵向按 cos 压缩）。
+把原作的判定粒子 prefab（tap effect 与方向键特效，Unity ParticleSystem 参数）转换为 Sonolus 粒子包。默认运行即生成 NotGarupa 需要的**全部**粒子条目，没有按条目选择的参数。每个 prefab 输出一个面向屏幕的效果，以及每个 lane 平面倾角一个 `<prefab>#plane<角度>` 效果（四边形纵向按 cos 压缩）。
 
 ## 条目
 
@@ -44,7 +44,6 @@ sonolus-notgarupa-particle-generator [-out out] [-cache .cache] [-offline] [-v] 
 ## 素材来源
 
 - 判定粒子：从原作官方资源 CDN（`https://content.garupa.jp/Release/<版本>/Android/<bundle>`）下载 `ingameskin/tapeffect/<tap effect>` 与 `ingameskin/tapeffect/directionalflick<方向键皮肤><normal|light>`，资源版本固定为 `internal/cdn` 的 `PinnedVersion`（`10.1.0.200_e019f5bb…`）。程序直接解析 UnityFS（LZ4）与带 type tree 的序列化文件，读取 GameObject / Transform / ParticleSystem / ParticleSystemRenderer / Material / Mesh，按 `m_IsActive` 跳过未激活的子系统，并解码 Texture2D（RGB24、RGBA32、ETC1、ETC2 + EAC）与 Mesh（顶点流、UV、顶点色、16/32 位索引）。每个 bundle 只下载、解析、转换一次，由所有用到它的条目共享。
-- 通关烟花：原作 APK 内置（不在 AssetBundle 中），组件树快照 `game-clear-profile.json.gz` 与两张贴图随项目放在 `assets/apk/gameclear/`（`go:embed` 编入程序），每个条目都包含。
 
 本生成器不使用 Bestdori。
 
@@ -77,7 +76,7 @@ Sonolus 粒子是只做线性插值、只有线性随机输入的旋转矩形，
 
 ## 契约
 
-`<out>/contracts/<条目>.json` 列出该条目的每个效果：`name`、`prefab`、`duration`、`loop`、`planeDeg` 与 `quadScale`（平面效果的纵向压缩 cos）、`groups`、`particles`、`systems`、`notes`（跳过的系统与原因）、HABAHIRO 宽度变体的 `width`、烟花的 `clear`。
+`<out>/contracts/<条目>.json` 列出该条目的每个效果：`name`、`prefab`、`duration`、`loop`、`planeDeg` 与 `quadScale`（平面效果的纵向压缩 cos）、`groups`、`particles`、`systems`、`notes`（跳过的系统与原因）、HABAHIRO 宽度变体的 `width`。
 
 不同 tap effect 的平面倾角不同（44°–64°、−65° 等），所以各条目的效果名集合不同：全部条目的效果名并集为 186 个（普通条目 96 个，HABAHIRO 条目 129 个），有的条目某个 prefab 只有平面部分、没有面向屏幕的部分。引擎声明并集，初始化时用 `Exists()` 记下当前条目有哪些部分（每个 prefab 最多两个平面部分）。
 
@@ -93,16 +92,7 @@ Sonolus 粒子效果中的粒子时间是生成时长的比例，引擎读不到
 | `effect_TapKeep`（循环） | 1 s，平面部分 18 s |
 | 方向键 `effect_tap_directional_flick_l/r`、`_2`、`_3`、`_finger` | 0.7 s、1.1 s、1.1 s、0.35 s |
 
-一次性效果取该族在全部 tap effect 中最长的时长，较短的效果时间不变、提前结束；循环效果取各周期的公倍数（TapKeep 平面部分的周期为 1、6、9 s），较短的周期重复。某个效果超过该族时长或周期不能整除时生成失败，需要同时修改 `canonical.go` 与引擎常量。烟花在所有条目中相同，保留原时长。
-
-## 烟花
-
-`game-clear-profile.json` 是原始 Unity 组件树加 Animator clip。clip 在各自时刻激活烟花根对象（`effect_par_*`），根下的 ParticleSystem 随之播放。每个根（若根下系统的发射位置不同则按位置拆分，名字加 `#<首个系统名>`）输出一个效果，系统间的 startDelay 已包含在效果内：
-
-- `GameClearParticle/effect_par_firework_star_<颜色>1[ (1)]`：基础通关烟花（10 个根 × 3 个系统 a/b/c；`green1` 拆为 `#effect_gameclear_firework_star_a` 与 `#effect_gameclear_firework_star_b`）。clip `MusicGameClear` 在通关后 0.2 s 开始。
-- `FullComboAnimation/effect_par_firework_star`、`AllPerfectAnimation/effect_par_firework_star`：FC / AP 追加烟花，clip 在通关时开始，0.2333 s 激活。
-
-契约中这些效果带 `clear` 字段：`anchorUI`（发射点，UI 单位，屏幕中心为原点、y 向上，已含子对象偏移 `0.185 × 子对象位置`）、`start`（通关后秒数）、`clipTime`（clip 内激活时间）、`unit`（0.185）。引擎在 `start` 时以 `uiPoint(anchorUI)` 为中心、半边长 `unit`（Sonolus 单位，**不**乘 UI 缩放：原作 scaling mode 为 Local，只用系统自身缩放 0.185）生成一次。base 用于所有通关，fullCombo / allPerfect 分别在状态 2 / 3 时追加。
+一次性效果取该族在全部 tap effect 中最长的时长，较短的效果时间不变、提前结束；循环效果取各周期的公倍数（TapKeep 平面部分的周期为 1、6、9 s），较短的周期重复。某个效果超过该族时长或周期不能整除时生成失败，需要同时修改 `canonical.go` 与引擎常量。
 
 ## HABAHIRO
 

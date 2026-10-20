@@ -1,8 +1,8 @@
 package particle
 
 // Particle textures. A texture is identified by the SHA-256 of its RGBA
-// pixels, so equal textures of different bundles (the tap-effect, game-clear
-// and HABAHIRO copies of Tex_parSet_1, …) share their sprites. Tap-effect
+// pixels, so equal textures of different bundles (the tap-effect and
+// HABAHIRO copies of Tex_parSet_1, …) share their sprites. Tap-effect
 // textures are decoded from the original asset bundles.
 
 import (
@@ -11,8 +11,6 @@ import (
 	"fmt"
 	"image"
 	"sync"
-
-	"github.com/WindowsSov8forUs/sonolus-notgarupa-particle-generator/internal/imgutil"
 )
 
 type textureStore struct {
@@ -38,23 +36,6 @@ func (t *textureStore) addBundle(key string, src textureSource) {
 			return raster(name)
 		}
 		return src(name)
-	}
-}
-
-// addGameClear registers the game-clear textures (asset key → PNG file).
-func (t *textureStore) addGameClear(files map[string]string) {
-	t.mu.Lock()
-	defer t.mu.Unlock()
-	t.sources["gameclear"] = func(name string) (*image.NRGBA, error) {
-		f, ok := files[name]
-		if !ok {
-			return nil, fmt.Errorf("game-clear texture %s not in the profile assets", name)
-		}
-		data, err := gameClearAsset(f)
-		if err != nil {
-			return nil, err
-		}
-		return imgutil.Decode(data)
 	}
 }
 

@@ -73,8 +73,7 @@ type part struct {
 	groups   []outGroup
 	systems  []string
 	notes    []string
-	width    int          // HABAHIRO width variant (2..7), 0 otherwise
-	clear    *clearEffect // clear / Full Combo / All Perfect firework
+	width    int // HABAHIRO width variant (2..7), 0 otherwise
 }
 
 type convertOptions struct {
@@ -83,23 +82,16 @@ type convertOptions struct {
 	posTol       float64
 	loopSeconds  float64 // period of looping effects
 	maxLoopCycle float64
-	// Spread the azimuths of a stratified burst evenly around the shape
-	// (jittered per stratum, turned per system) instead of taking them from
-	// the low-discrepancy draws, whose 25-particle prefix leaves a visible
-	// gap in a ring. Used for the fireworks only.
-	evenAzimuth bool
 }
 
 var irrational = [...]float64{0.6180339887, 0.4142135624, 0.7320508076, 0.2360679775, 0.6457513111, 0.1622776602, 0.3166247904, 0.6055512755, 0.8284271247, 0.1231056256, 0.4721359550}
 
 type strataDims struct {
 	values [11]float64
-	// azimuth in turns when set (≥ 0); otherwise derived from values.
-	azimuth float64
 }
 
 func lowDiscrepancy(index int) strataDims {
-	d := strataDims{azimuth: -1}
+	var d strataDims
 	for k := range d.values {
 		v := 0.5 + float64(index)*irrational[k]
 		d.values[k] = v - math.Floor(v)
@@ -252,10 +244,6 @@ func convertSystem(pt *part, s *system, o convertOptions, steady bool) error {
 				n++
 			}
 			dims := lowDiscrepancy(global)
-			if o.evenAzimuth && !linearAzimuth {
-				a := (float64(j)+dims.values[1])/float64(strata) + float64(len(pt.systems))*irrational[0]
-				dims.azimuth = a - math.Floor(a)
-			}
 			global++
 			g, life, err := buildGroup(s, pt, o, dims, birth, linearAzimuth, box, linearSize, linearRot, mode, cosT, spriteKey{bundle: pt.bundle, texture: tex, tilesX: tilesX, tilesY: tilesY, blend: blend})
 			if err != nil {
@@ -317,9 +305,6 @@ func buildGroup(s *system, pt *part, o convertOptions, d strataDims, birth float
 	rotR := v[10]
 	shapeBase := shapeDraws{azimuth: v[1]*0.37 + v[5]*0.63, polar: v[8], radius: v[9], length: v[10]}
 	shapeBase.azimuth -= math.Floor(shapeBase.azimuth)
-	if d.azimuth >= 0 {
-		shapeBase.azimuth = d.azimuth
-	}
 
 	baseVariant := variant{key: "", azimuth: shapeBase.azimuth, sizeR: sizeR, rotR: rotR}
 	if linearSize {

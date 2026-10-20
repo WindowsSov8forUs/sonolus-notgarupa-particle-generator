@@ -52,12 +52,8 @@ func family(pt *part) string {
 }
 
 // canonicalPart returns pt on its family's canonical duration (a copy when
-// that changes anything; parts are shared between items). Fireworks keep
-// their own durations: they are the same in every item.
+// that changes anything; parts are shared between items).
 func canonicalPart(pt *part) (*part, error) {
-	if pt.clear != nil {
-		return pt, nil
-	}
 	c, ok := canonicalDurations[family(pt)]
 	if !ok {
 		return nil, fmt.Errorf("%s: no canonical duration for family %s", pt.name, family(pt))

@@ -1,8 +1,6 @@
 // Package particle converts the original game's judgement particle prefabs
 // (tap effects and directional flick effects, read from the original asset
-// bundles on the game's content CDN) and the clear / Full Combo / All Perfect
-// fireworks (built into the APK, shipped in assets/apk) into Sonolus particle
-// items: one item per combination of tap effect, directional skin and
+// bundles on the game's content CDN) into Sonolus particle items: one item per combination of tap effect, directional skin and
 // directional effect setting that the original can show (see
 // internal/master). One Sonolus effect is emitted per prefab for its
 // view-aligned systems and one per lane-plane tilt (`<prefab>#plane<deg>`).
@@ -61,17 +59,6 @@ type ContractEffect struct {
 	Notes     []string   `json:"notes,omitempty"`
 	// HABAHIRO width variant: note width in lanes.
 	Width int `json:"width,omitempty"`
-	// Fireworks: spawn position and time (see the contract's "clear" note).
-	Clear *ContractClear `json:"clear,omitempty"`
-}
-
-// ContractClear is the spawn position and time of a firework effect.
-type ContractClear struct {
-	Branch   string     `json:"branch"`
-	AnchorUI [2]float64 `json:"anchorUI"`
-	Start    float64    `json:"start"`
-	ClipTime float64    `json:"clipTime"`
-	Unit     float64    `json:"unit"`
 }
 
 func sortedStrings(m map[string]string) []string {

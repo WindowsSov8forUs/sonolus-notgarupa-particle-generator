@@ -69,7 +69,6 @@ type Result struct {
 // Contract describes every effect for the engine (written as
 // contracts/<item>.json by the command).
 type Contract struct {
-	Clear    string           `json:"clear"`
 	Effects  []ContractEffect `json:"effects"`
 	Particle string           `json:"particle"`
 	Quad     string           `json:"quad"`
@@ -259,30 +258,6 @@ func Generate(ctx context.Context, opts Options, emit func(*Result) error) error
 		return nil
 	}
 
-	// fireworks (APK game clear), shared by every item
-	raw, err := readGameClearProfile()
-	if err != nil {
-		return err
-	}
-	cb, fireworks, clearFiles, err := loadClear(raw)
-	if err != nil {
-		return err
-	}
-	store.addGameClear(clearFiles)
-	fo := conversion
-	fo.evenAzimuth = true
-	var fireworkParts []*part
-	for _, fw := range fireworks {
-		ps, err := convertPrefab(cb, fw.name, fo, nil)
-		if err != nil {
-			return fmt.Errorf("%s: %w", fw.name, err)
-		}
-		for _, p := range ps {
-			p.clear = &fw
-		}
-		fireworkParts = append(fireworkParts, ps...)
-	}
-
 	tiles := &tileCache{tiles: map[spriteKey]*image.NRGBA{}}
 	// items: assemble in parallel, emit in order
 	out := make([]*Result, len(specs))
@@ -300,7 +275,7 @@ func Generate(ctx context.Context, opts Options, emit func(*Result) error) error
 			defer signal(i)
 			p := specs[i]
 			parts := append(append([]*part(nil), partsOf(tapEffectBundle+p.Effect, false)...), partsOf(tapEffectBundle+p.DirectionalEffect(), false)...)
-			extra := append([]*part(nil), fireworkParts...)
+			var extra []*part
 			if p.Habahiro {
 				extra = append(extra, partsOf(tapEffectBundle+p.Effect, true)...)
 			}
@@ -407,7 +382,7 @@ func (c *tileCache) get(k spriteKey, store *textureStore) (*image.NRGBA, error) 
 }
 
 // assemble builds one item from converted parts: the tap and directional
-// effects, the standard aliases, then the fireworks and HABAHIRO widths.
+// effects, the standard aliases, then the HABAHIRO widths.
 func assemble(spec master.Particle, parts, extra []*part, store *textureStore, tiles *tileCache) (*Result, error) {
 	// Sprites: one per (texture content, tile) actually used.
 	type spriteEntry struct {
@@ -489,10 +464,6 @@ func assemble(spec master.Particle, parts, extra []*part, store *textureStore, t
 		m := ContractEffect{Name: pt.name, Prefab: pt.prefab, Duration: pt.duration, Loop: pt.loop,
 			PlaneDeg: pt.planeDeg, QuadScale: [2]float64{1, sy}, Groups: len(pt.groups), Particles: np, Systems: pt.systems, Notes: pt.notes,
 			Width: pt.width}
-		if c := pt.clear; c != nil {
-			m.Systems = c.systems
-			m.Clear = &ContractClear{Branch: c.branch, AnchorUI: c.anchor, Start: c.start, ClipTime: round6(c.clipAt), Unit: clearUnit}
-		}
 		meta = append(meta, m)
 	}
 	for _, pt := range parts {
@@ -541,9 +512,9 @@ func assemble(spec master.Particle, parts, extra []*part, store *textureStore, t
 		tap = "HABAHIRO"
 	}
 	title := fmt.Sprintf("NotGarupa %s / %s (%s)", tap, spec.Directional, setting)
-	desc := fmt.Sprintf("Tap effect %s + directional flick %s (%s) + clear / Full Combo / All Perfect fireworks, converted from the original Unity particle systems.", spec.Effect, spec.Directional, setting)
+	desc := fmt.Sprintf("Tap effect %s + directional flick %s (%s), converted from the original Unity particle systems.", spec.Effect, spec.Directional, setting)
 	if spec.Habahiro {
-		desc = fmt.Sprintf("For #HABAHIRO levels: tap effect HABAHIRO (with width variants _2 … _7 for multi-width notes) + directional flick %s (%s) + clear / Full Combo / All Perfect fireworks, converted from the original Unity particle systems.", spec.Directional, setting)
+		desc = fmt.Sprintf("For #HABAHIRO levels: tap effect HABAHIRO (with width variants _2 … _7 for multi-width notes) + directional flick %s (%s), converted from the original Unity particle systems.", spec.Directional, setting)
 	}
 	name := spec.Name()
 	return &Result{
@@ -563,7 +534,6 @@ func assemble(spec master.Particle, parts, extra []*part, store *textureStore, t
 		Contract: Contract{
 			Particle: name,
 			Quad:     "spawn with the quad centred on the receiving button anchor, half extent g·quadScale (g = world units per particle unit = rate·noteSize·safeRatio); effect coordinates are original particle units (lane spacing 2.2)",
-			Clear:    "fireworks (effects with \"clear\"): spawn once per clear at clear.start seconds after the clear (base branch for every clear; fullCombo / allPerfect in addition for status 2 / 3) with the quad centred on uiPoint(clear.anchorUI) (UI units from the screen centre, y up) and half extent clear.unit Sonolus units in both axes (fixed: scaling mode Local ignores the UI scale); clear.clipTime is the activation time inside the branch clip",
 			Width:    "HABAHIRO width variants (effects with \"width\"): spawn like the base prefab at the note's effect anchor (centre lane for odd widths, the half-lane button between the two centre lanes for even widths)",
 			Texture:  [2]int{packed.Texture.Rect.Dx(), packed.Texture.Rect.Dy()},
 			Effects:  meta,
