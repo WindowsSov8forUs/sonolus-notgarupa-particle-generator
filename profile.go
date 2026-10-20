@@ -47,6 +47,7 @@ type SystemProfile struct {
 		LengthInSec     float64     `json:"lengthInSec"`
 		SimulationSpeed float64     `json:"simulationSpeed"`
 		Looping         bool        `json:"looping"`
+		Prewarm         bool        `json:"prewarm"`
 		StartDelay      MinMaxCurve `json:"startDelay"`
 		ScalingMode     int         `json:"scalingMode"`
 	} `json:"system"`

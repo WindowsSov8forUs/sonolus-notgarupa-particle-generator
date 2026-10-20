@@ -199,10 +199,16 @@ func convertSystem(pt *part, s *system, o convertOptions, steady bool) error {
 	period := s.prof.System.LengthInSec
 	window := pt.duration
 	emissions := s.emissions(window)
-	meanLife := init.StartLifetime.eval(0, 0.5)
-	if steady && s.prof.System.Looping && meanLife < pt.duration*4 {
-		// steady-state loop: particles born up to one lifetime before the
-		// effect starts are visible at its beginning.
+	// Steady-state loop: particles born up to one lifetime before the effect
+	// starts are visible at its beginning, which is what every later loop
+	// cycle shows. A prewarmed system starts that way; any other system
+	// starts cold when the effect starts playing (a TapKeep at the start of
+	// a hold), so it is only backfilled when its particles live within one
+	// loop window. Longer-lived ones (TapKeep's rotating rings: lifetime
+	// 20 s, max one particle) are born at the start instead of leaving the
+	// dying tail of a backfilled one.
+	maxLife := init.StartLifetime.eval(0, 1)
+	if steady && s.prof.System.Looping && (s.prof.System.Prewarm || maxLife <= pt.duration) {
 		pre := math.Ceil(init.StartLifetime.eval(0, 1)/period) * period
 		var shifted [][2]float64
 		for k := 1; float64(k)*period <= pre+1e-9; k++ {
