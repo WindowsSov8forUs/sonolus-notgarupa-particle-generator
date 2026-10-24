@@ -16,6 +16,7 @@ func TestCounts(t *testing.T) {
 		}
 		names[s.Name()] = true
 	}
+	names = map[string]bool{} // item types have separate name spaces
 	for _, p := range particles {
 		if names[p.Name()] {
 			t.Errorf("duplicate particle %s", p.Name())
@@ -25,7 +26,7 @@ func TestCounts(t *testing.T) {
 	if skins[0].Name() != "garupa-skin00-skin00-skin00" || skins[0].Title != "TYPE1 / レーンスキン00 / TYPE1" {
 		t.Errorf("first skin %s %q", skins[0].Name(), skins[0].Title)
 	}
-	if particles[0].Name() != "garupa-skin00-skin00normal" || particles[0].Title != "エフェクトスキン00 / TYPE1 / 大" {
+	if particles[0].Name() != "garupa-skin00-skin00" || particles[0].Title != "エフェクトスキン00 / TYPE1" {
 		t.Errorf("first particle %s %q", particles[0].Name(), particles[0].Title)
 	}
 	// a fixed combination is written once, in the name and in the title

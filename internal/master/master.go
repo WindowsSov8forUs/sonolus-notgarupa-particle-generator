@@ -94,10 +94,6 @@ type Master struct {
 		Background       []Row `json:"background"`
 	} `json:"normal"`
 	Special []Special `json:"special"`
-	Wording struct {
-		DirectionalEffectNormal Names `json:"directionalEffectNormal"`
-		DirectionalEffectLight  Names `json:"directionalEffectLight"`
-	} `json:"wording"`
 }
 
 // Fixed bundles of the original.
@@ -367,75 +363,41 @@ func touches(s Special, axes ...string) bool {
 	return false
 }
 
-// Particle is one particle item: tap effect, directional skin and the
-// directional effect setting.
+// Particle is one particle item: tap effect and directional skin. Both
+// directional effect settings are in every item (DirectionalEffects); the
+// engine's option picks one, as the original live setting does.
 type Particle struct {
 	Effect, Directional string
-	Light               bool // directional effect setting 1 (light) instead of 0 (normal)
 	Habahiro            bool // Effect is the chart-forced habahiro tap effect
 	Group               *Special
 	Title               string
-}
-
-func (p Particle) setting() string {
-	if p.Light {
-		return "light"
-	}
-	return "normal"
 }
 
 func (p Particle) axes() []axisValue {
 	return []axisValue{{"effect", p.Effect}, {"directionalFlick", p.Directional}}
 }
 
-// fixesDirectional reports whether the group fixes the directional skin
-// (the directional effect setting then follows the group as its own part).
-func (p Particle) fixesDirectional() bool {
-	if p.Group == nil {
-		return false
-	}
-	_, ok := p.Group.Components["directionalFlick"]
-	return ok
+// DirectionalEffects are the directional effect bundle name suffixes of the
+// two settings, e.g. "directionalflickskin00normal" and
+// "directionalflickskin00light".
+func (p Particle) DirectionalEffects() (normal, light string) {
+	return "directionalflick" + p.Directional + "normal", "directionalflick" + p.Directional + "light"
 }
 
-// DirectionalEffect is the directional effect bundle name suffix, e.g.
-// "directionalflickskin00normal".
-func (p Particle) DirectionalEffect() string {
-	if p.Light {
-		return "directionalflick" + p.Directional + "light"
-	}
-	return "directionalflick" + p.Directional + "normal"
-}
-
-// Name is the Sonolus item name: the directional part carries the
-// directional effect bundle suffix (<directional><normal|light>).
+// Name is the Sonolus item name.
 func (p Particle) Name() string {
 	if p.Habahiro {
-		return Prefix + "habahiro-" + p.Directional + p.setting()
+		return Prefix + "habahiro-" + p.Directional
 	}
-	parts := compose(p.Group, p.axes(), func(a axisValue) string {
-		if a.axis == "directionalFlick" {
-			return a.bundle + p.setting()
-		}
-		return a.bundle
-	}, bundleOf)
-	if p.fixesDirectional() {
-		parts = append(parts, p.setting())
-	}
-	return Prefix + strings.Join(parts, "-")
+	return Prefix + strings.Join(compose(p.Group, p.axes(), bundleOf, bundleOf), "-")
 }
 
 func (m *Master) particleTitle(p Particle) string {
-	setting := m.Wording.DirectionalEffectNormal.Pick()
-	if p.Light {
-		setting = m.Wording.DirectionalEffectLight.Pick()
-	}
 	name := func(a axisValue) string { return m.AxisName(a.axis, a.bundle) }
-	parts := compose(p.Group, p.axes(), name, func(axisValue) string { return p.Group.Names.Pick() })
-	return strings.Join(append(parts, setting), " / ")
+	return strings.Join(compose(p.Group, p.axes(), name, func(axisValue) string { return p.Group.Names.Pick() }), " / ")
 }
 
-func (p Particle) key() string { return fmt.Sprintf("%s|%s|%v", p.Effect, p.Directional, p.Light) }
+func (p Particle) key() string { return p.Effect + "|" + p.Directional }
 
 // Particles returns every particle item.
 func (m *Master) Particles() []Particle {
@@ -444,14 +406,12 @@ func (m *Master) Particles() []Particle {
 	add := func(s *Special) {
 		for _, e := range pick(s, "effect", bundles(m.Normal.Effect)) {
 			for _, d := range pick(s, "directionalFlick", bundles(m.Normal.DirectionalFlick)) {
-				for _, light := range []bool{false, true} {
-					p := Particle{Effect: e, Directional: d, Light: light, Group: s}
-					if i, ok := seen[p.key()]; !ok {
-						seen[p.key()] = len(out)
-						out = append(out, p)
-					} else if s != nil && out[i].Group != nil && s.before(out[i].Group) {
-						out[i].Group = s
-					}
+				p := Particle{Effect: e, Directional: d, Group: s}
+				if i, ok := seen[p.key()]; !ok {
+					seen[p.key()] = len(out)
+					out = append(out, p)
+				} else if s != nil && out[i].Group != nil && s.before(out[i].Group) {
+					out[i].Group = s
 				}
 			}
 		}
@@ -463,9 +423,7 @@ func (m *Master) Particles() []Particle {
 		}
 	}
 	for _, d := range m.DirectionalFlicks() {
-		for _, light := range []bool{false, true} {
-			out = append(out, Particle{Effect: Habahiro, Directional: d, Light: light, Habahiro: true})
-		}
+		out = append(out, Particle{Effect: Habahiro, Directional: d, Habahiro: true})
 	}
 	for i := range out {
 		out[i].Title = m.particleTitle(out[i])

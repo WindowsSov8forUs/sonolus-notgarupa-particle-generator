@@ -169,7 +169,9 @@ func Generate(ctx context.Context, opts Options, emit func(*Result) error) error
 	}
 	for _, p := range specs {
 		addUnit(unit{bundle: tapEffectBundle + p.Effect, prefabs: prefabs["ordinary"]})
-		addUnit(unit{bundle: tapEffectBundle + p.DirectionalEffect(), prefabs: prefabs["directional"]})
+		normal, light := p.DirectionalEffects()
+		addUnit(unit{bundle: tapEffectBundle + normal, prefabs: prefabs["directional"]})
+		addUnit(unit{bundle: tapEffectBundle + light, prefabs: prefabs["directional"]})
 		if p.Habahiro {
 			var names []string
 			for _, base := range habahiroWidths {
@@ -274,7 +276,15 @@ func Generate(ctx context.Context, opts Options, emit func(*Result) error) error
 		err := parallel(ctx, workers, len(specs), func(i int) error {
 			defer signal(i)
 			p := specs[i]
-			parts := append(append([]*part(nil), partsOf(tapEffectBundle+p.Effect, false)...), partsOf(tapEffectBundle+p.DirectionalEffect(), false)...)
+			normal, light := p.DirectionalEffects()
+			parts := append(append([]*part(nil), partsOf(tapEffectBundle+p.Effect, false)...), partsOf(tapEffectBundle+normal, false)...)
+			// the light directional effect setting: the same effects under
+			// the light/ prefix (the engine's option picks them)
+			for _, pt := range partsOf(tapEffectBundle+light, false) {
+				c := *pt
+				c.name = lightPrefix + pt.name
+				parts = append(parts, &c)
+			}
 			var extra []*part
 			if p.Habahiro {
 				extra = append(extra, partsOf(tapEffectBundle+p.Effect, true)...)
@@ -503,14 +513,10 @@ func assemble(spec master.Particle, parts, extra []*part, store *textureStore, t
 	if err != nil {
 		return nil, err
 	}
-	setting := "normal"
-	if spec.Light {
-		setting = "light"
-	}
 	title := spec.Title
-	desc := fmt.Sprintf("Tap effect %s + directional flick %s (%s), converted from the original Unity particle systems.", spec.Effect, spec.Directional, setting)
+	desc := fmt.Sprintf("Tap effect %s + directional flick %s (both directional effect settings; light under the %s prefix), converted from the original Unity particle systems.", spec.Effect, spec.Directional, lightPrefix)
 	if spec.Habahiro {
-		desc = fmt.Sprintf("For #HABAHIRO levels: tap effect HABAHIRO (with width variants _2 … _7 for multi-width notes) + directional flick %s (%s), converted from the original Unity particle systems.", spec.Directional, setting)
+		desc = fmt.Sprintf("For #HABAHIRO levels: tap effect HABAHIRO (with width variants _2 … _7 for multi-width notes) + directional flick %s (both directional effect settings; light under the %s prefix), converted from the original Unity particle systems.", spec.Directional, lightPrefix)
 	}
 	name := spec.Name()
 	return &Result{

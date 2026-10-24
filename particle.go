@@ -20,6 +20,11 @@ import (
 	"strings"
 )
 
+// lightPrefix names the effects of the light directional effect setting
+// (tapeffect/directionalflick<skin>light); the normal setting keeps the
+// prefab names.
+const lightPrefix = "light/"
+
 // Prefabs per bundle, in routing order.
 var prefabs = map[string][]string{
 	"ordinary": {"effect_tap", "effect_tap_good", "effect_tap_great", "effect_tap_perfect",

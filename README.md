@@ -4,15 +4,17 @@
 
 ## 条目
 
-条目由 `internal/master`（原作 JP 10.1.4 的皮肤主数据）推出，共 154 个：
+条目由 `internal/master`（原作 JP 10.1.4 的皮肤主数据）推出，共 77 个：
 
 | 组成 | 来源 | 数量 |
 |---|---|---|
-| 普通设置 | tap effect 5 × 方向键皮肤 5 × 方向键特效设置 normal / light | 50 |
-| 特殊组合（Collaboration / Limited） | 组合中的 tap effect（persona、miku、cafe、maid、coin、witch、stage、delta、april2019）× 其余轴的普通设置；persona 的方向键组合另固定方向键皮肤 | 92 |
-| `#HABAHIRO` | habahiro tap effect（含宽度变体与换道闪光所在 bundle）× 全部可选方向键皮肤（5 个普通 + persona）× normal / light | 12 |
+| 普通设置 | tap effect 5 × 方向键皮肤 5 | 25 |
+| 特殊组合（Collaboration / Limited） | 组合中的 tap effect（persona、miku、cafe、maid、coin、witch、stage、delta、april2019）× 其余轴的普通设置；persona 的方向键组合另固定方向键皮肤 | 46 |
+| `#HABAHIRO` | habahiro tap effect（含宽度变体与换道闪光所在 bundle）× 全部可选方向键皮肤（5 个普通 + persona） | 6 |
 
-条目名 `garupa-<tap effect>-<方向键皮肤><normal|light>`，例如 `garupa-skin00-skin00normal`（默认）、`garupa-skin_witch-skin03light`、`garupa-habahiro-skin00normal`（HABAHIRO 关卡默认）；方向键皮肤属于固定组合时设置单独成段（`garupa-skin_persona-normal`）。标题为 tap effect、方向键皮肤与方向键特效设置的原作名称（设置为原作设置界面的「大」/「小」），以 ` / ` 连接，例如「エフェクトスキン00 / TYPE1 / 大」、「ファントム復刻スキン / 大」、「HABAHIRO / TYPE1 / 大」。名称来自原作主数据（`internal/master/skins.json` 的 `names`，取 JP、EN、TW、CN 中第一个有的名称）：普通设置用各行的皮肤名（`TYPE1`、`レーンスキン00`、`エフェクトスキン00`、`SEスキン00`、`デフォルト背景` 等），Collaboration 行用季节描述（`MasterSeasonSpecial.description`，如 `ペルソナコラボ`），Limited 行用限定皮肤名（如 `エイプリルフール2019`）；同一组件出现在多行时取 Limited 行，其次取季节最早的行。特殊行替换的各轴是一个固定组合，条目名只写一次（该组合的第一个 bundle），标题只写一次（该行的名称）。条目的作者为 `GirlsBandParty`，副标题为游戏名。HABAHIRO 条目的 `Result.Habahiro` 为 true。它们不是与普通条目并列的粒子：服务器不在列表中提供它们，只按玩家的方向键配置项为 `#HABAHIRO` 关卡选用对应条目（见 `sonolus-notgarupa-server` 的 README）。
+原作的方向键特效设置（「左右フリックアイコンエフェクト」大 / 小，即 `tapeffect/directionalflick<方向键皮肤><normal|light>`）不分条目：每个条目同时含两种设置的方向键特效，normal 用 prefab 原名，light 加前缀 `light/`（如 `light/effect_tap_directional_flick_l`、`light/effect_tap_directional_flick_l_finger#plane44`），由引擎的选项选择。
+
+条目名 `garupa-<tap effect>-<方向键皮肤>`，例如 `garupa-skin00-skin00`（默认）、`garupa-skin_witch-skin03`、`garupa-skin_persona`（固定组合）、`garupa-habahiro-skin00`（HABAHIRO 关卡默认）。标题为 tap effect 与方向键皮肤的原作名称，以 ` / ` 连接，例如「エフェクトスキン00 / TYPE1」、「ファントム復刻スキン」、「HABAHIRO / TYPE1」。名称来自原作主数据（`internal/master/skins.json` 的 `names`，取 JP、EN、TW、CN 中第一个有的名称）：普通设置用各行的皮肤名（`TYPE1`、`レーンスキン00`、`エフェクトスキン00`、`SEスキン00`、`デフォルト背景` 等），Collaboration 行用季节描述（`MasterSeasonSpecial.description`，如 `ペルソナコラボ`），Limited 行用限定皮肤名（如 `エイプリルフール2019`）；同一组件出现在多行时取 Limited 行，其次取季节最早的行。特殊行替换的各轴是一个固定组合，条目名只写一次（该组合的第一个 bundle），标题只写一次（该行的名称）。条目的作者为 `GirlsBandParty`，副标题为游戏名。HABAHIRO 条目的 `Result.Habahiro` 为 true。它们不是与普通条目并列的粒子：服务器不在列表中提供它们，只按玩家的方向键配置项为 `#HABAHIRO` 关卡选用对应条目（见 `sonolus-notgarupa-server` 的 README）。
 
 主数据中无法取得素材的组合（collaboration 3 / seasonSpecialId 36）整组排除，见 `internal/master`；任何其余素材下载失败都是错误，不会生成残缺的条目。
 
