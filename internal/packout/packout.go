@@ -12,9 +12,19 @@ import (
 	"github.com/WindowsSov8forUs/sonolus-core-go/database"
 )
 
-// T returns an English / Simplified Chinese / Japanese localisation.
-func T(en, zhs, ja string) database.LocalizationText {
-	return database.LocalizationText{"en": core.Text(en), "zhs": core.Text(zhs), "ja": core.Text(ja)}
+// T returns an English / Simplified Chinese / Traditional Chinese / Japanese
+// localisation.
+func T(en, zhs, zht, ja string) database.LocalizationText {
+	return database.LocalizationText{"en": core.Text(en), "zhs": core.Text(zhs), "zht": core.Text(zht), "ja": core.Text(ja)}
+}
+
+// L converts a text per locale.
+func L(text map[string]string) database.LocalizationText {
+	out := database.LocalizationText{}
+	for locale, value := range text {
+		out[locale] = core.Text(value)
+	}
+	return out
 }
 
 // Item is the common part of skin/effect/particle/background item.json.

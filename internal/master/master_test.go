@@ -23,10 +23,10 @@ func TestCounts(t *testing.T) {
 		}
 		names[p.Name()] = true
 	}
-	if skins[0].Name() != "garupa-skin00-skin00-skin00" || skins[0].Title != "TYPE1 / TYPE1 / レーンスキン00" {
+	if skins[0].Name() != "garupa-skin00-skin00-skin00" || skins[0].Title["ja"] != "TYPE1 / TYPE1 / レーンスキン00" {
 		t.Errorf("first skin %s %q", skins[0].Name(), skins[0].Title)
 	}
-	if particles[0].Name() != "garupa-skin00-skin00" || particles[0].Title != "エフェクトスキン00 / TYPE1" {
+	if particles[0].Name() != "garupa-skin00-skin00" || particles[0].Title["ja"] != "エフェクトスキン00 / TYPE1" {
 		t.Errorf("first particle %s %q", particles[0].Name(), particles[0].Title)
 	}
 	// a fixed combination is written once, in the name and in the title
@@ -38,7 +38,7 @@ func TestCounts(t *testing.T) {
 	}
 	for _, s := range skins {
 		if title, ok := want[s.Name()]; ok {
-			if s.Title != title {
+			if s.Title["ja"] != title {
 				t.Errorf("%s: title %q, want %q", s.Name(), s.Title, title)
 			}
 			delete(want, s.Name())
@@ -46,6 +46,18 @@ func TestCounts(t *testing.T) {
 	}
 	for name := range want {
 		t.Errorf("missing skin %s", name)
+	}
+	// each locale shows its own server's names (ja JP, en EN, zht TW, zhs CN)
+	for _, s := range skins {
+		if s.Name() == "garupa-skin00-skin00-skin08" {
+			want := Text{"ja": "TYPE1 / TYPE1 / Roseliaのレーン", "en": "TYPE1 / TYPE1 / Roselia Lane",
+				"zht": "TYPE1 / TYPE1 / Roselia的軌跡", "zhs": "TYPE1 / TYPE1 / Roselia的按键条皮肤"}
+			for l, w := range want {
+				if s.Title[l] != w {
+					t.Errorf("%s %s: %q, want %q", s.Name(), l, s.Title[l], w)
+				}
+			}
+		}
 	}
 	if len(m.Specials()) != len(m.Special)-1 {
 		t.Errorf("specials %d", len(m.Specials()))

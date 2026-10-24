@@ -40,6 +40,38 @@ type Names map[string]string
 // NameOrder is the server priority of display names.
 var NameOrder = []string{"jp", "en", "tw", "cn"}
 
+// Text is a display text per Sonolus locale.
+type Text map[string]string
+
+// Locales are the Sonolus locales of Text with the server master whose
+// names each shows.
+var Locales = []struct{ Locale, Region string }{{"en", "en"}, {"ja", "jp"}, {"zhs", "cn"}, {"zht", "tw"}}
+
+// textOf builds a Text from a per-locale function.
+func textOf(f func(locale string) string) Text {
+	out := Text{}
+	for _, l := range Locales {
+		out[l.Locale] = f(l.Locale)
+	}
+	return out
+}
+
+// Text is the name per locale: the locale's own server, else Pick (fallback
+// when there is no name at all).
+func (n Names) Text(fallback string) Text {
+	if p := n.Pick(); p != "" {
+		fallback = p
+	}
+	return textOf(func(locale string) string {
+		for _, l := range Locales {
+			if l.Locale == locale && n[l.Region] != "" {
+				return n[l.Region]
+			}
+		}
+		return fallback
+	})
+}
+
 // Pick returns the first name in NameOrder ("" when there is none).
 func (n Names) Pick() string {
 	for _, r := range NameOrder {
@@ -191,16 +223,13 @@ func (m *Master) axisRows(axis string) []Row {
 
 // AxisName is the display name of a bundle on an axis: its normal row's
 // name, else the name of the preferred special row with that component.
-func (m *Master) AxisName(axis, bundle string) string {
+func (m *Master) AxisName(axis, bundle string) Text {
 	if bundle == Habahiro {
-		return "HABAHIRO"
+		return textOf(func(string) string { return "HABAHIRO" })
 	}
 	for _, r := range m.axisRows(axis) {
 		if r.Bundle == bundle {
-			if n := r.Names.Pick(); n != "" {
-				return n
-			}
-			return bundle
+			return r.Names.Text(bundle)
 		}
 	}
 	var best *Special
@@ -211,11 +240,9 @@ func (m *Master) AxisName(axis, bundle string) string {
 		}
 	}
 	if best != nil {
-		if n := best.Names.Pick(); n != "" {
-			return n
-		}
+		return best.Names.Text(bundle)
 	}
-	return bundle
+	return Names{}.Text(bundle)
 }
 
 // axisValue is one axis of an item.
@@ -226,7 +253,7 @@ type axisValue struct{ axis, bundle string }
 type Axis struct {
 	Axis   string `json:"axis"`
 	Bundle string `json:"bundle"`
-	Name   string `json:"name"`
+	Name   Text   `json:"name"`
 }
 
 func (m *Master) searchAxes(axes []axisValue) []Axis {
@@ -294,7 +321,7 @@ type Skin struct {
 	// every axis is a normal setting).
 	Group *Special
 	// Title is the display title (the axes' names).
-	Title string
+	Title Text
 	// Axes are the notes, directional and lane settings with their names.
 	Axes []Axis
 }
@@ -321,12 +348,16 @@ func (s Skin) Name() string {
 	return Prefix + strings.Join(compose(s.Group, s.axes(), freeJudge(bundleOf), bundleOf), "-")
 }
 
-func (m *Master) skinTitle(s Skin) string {
+func (m *Master) skinTitle(s Skin) Text {
 	if s.Habahiro {
-		return "HABAHIRO / " + m.AxisName("directionalFlick", s.Directional)
+		dir := m.AxisName("directionalFlick", s.Directional)
+		return textOf(func(l string) string { return "HABAHIRO / " + dir[l] })
 	}
-	name := func(a axisValue) string { return m.AxisName(a.axis, a.bundle) }
-	return strings.Join(compose(s.Group, s.axes(), freeJudge(name), func(axisValue) string { return s.Group.Names.Pick() }), " / ")
+	return textOf(func(l string) string {
+		name := func(a axisValue) string { return m.AxisName(a.axis, a.bundle)[l] }
+		group := func(axisValue) string { return s.Group.Names.Text("")[l] }
+		return strings.Join(compose(s.Group, s.axes(), freeJudge(name), group), " / ")
+	})
 }
 
 func (s Skin) key() string { return s.Notes + "|" + s.Lane + "|" + s.Directional + "|" + s.Judge }
@@ -392,7 +423,7 @@ type Particle struct {
 	Effect, Directional string
 	Habahiro            bool // Effect is the chart-forced habahiro tap effect
 	Group               *Special
-	Title               string
+	Title               Text
 	Axes                []Axis // tap effect and directional settings
 }
 
@@ -415,9 +446,12 @@ func (p Particle) Name() string {
 	return Prefix + strings.Join(compose(p.Group, p.axes(), bundleOf, bundleOf), "-")
 }
 
-func (m *Master) particleTitle(p Particle) string {
-	name := func(a axisValue) string { return m.AxisName(a.axis, a.bundle) }
-	return strings.Join(compose(p.Group, p.axes(), name, func(axisValue) string { return p.Group.Names.Pick() }), " / ")
+func (m *Master) particleTitle(p Particle) Text {
+	return textOf(func(l string) string {
+		name := func(a axisValue) string { return m.AxisName(a.axis, a.bundle)[l] }
+		group := func(axisValue) string { return p.Group.Names.Text("")[l] }
+		return strings.Join(compose(p.Group, p.axes(), name, group), " / ")
+	})
 }
 
 func (p Particle) key() string { return p.Effect + "|" + p.Directional }
@@ -456,7 +490,10 @@ func (m *Master) Particles() []Particle {
 }
 
 // Effect is one effect item: the tap SE skin (the directional SE is fixed).
-type Effect struct{ SoundEffect, Title string }
+type Effect struct {
+	SoundEffect string
+	Title       Text
+}
 
 // Name is the Sonolus item name.
 func (e Effect) Name() string { return Prefix + e.SoundEffect }
@@ -486,7 +523,7 @@ func (m *Master) Effects() []Effect {
 type Background struct {
 	Bundle   string
 	Habahiro bool
-	Title    string
+	Title    Text
 }
 
 // Name is the Sonolus item name.

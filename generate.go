@@ -98,7 +98,7 @@ type SourceTree struct{ src *packout.Source }
 
 // CreateSourceTree (re)creates root as an empty sonolus-pack source tree.
 func CreateSourceTree(root string) (*SourceTree, error) {
-	src, err := packout.Init(root, packout.T("NotGarupa Particles", "NotGarupa 粒子", "NotGarupa パーティクル"))
+	src, err := packout.Init(root, packout.T("NotGarupa Particles", "NotGarupa 粒子", "NotGarupa 粒子", "NotGarupa パーティクル"))
 	if err != nil {
 		return nil, err
 	}
@@ -530,11 +530,11 @@ func assemble(spec master.Particle, parts, extra []*part, store *textureStore, t
 		Item: database.DatabaseParticleItem{
 			Name:        name,
 			Version:     packout.ParticleVersion,
-			Title:       packout.T(title, title, title),
-			Subtitle:    packout.T("BanG Dream! Girls Band Party!", "BanG Dream! 少女乐团派对！", "バンドリ！ ガールズバンドパーティ！"),
-			Author:      packout.T("GirlsBandParty", "GirlsBandParty", "GirlsBandParty"),
+			Title:       packout.L(title),
+			Subtitle:    packout.T("BanG Dream! Girls Band Party!", "BanG Dream! 少女乐团派对！", "BanG Dream! 少女樂團派對！", "バンドリ！ ガールズバンドパーティ！"),
+			Author:      packout.T("GirlsBandParty", "GirlsBandParty", "GirlsBandParty", "GirlsBandParty"),
 			Tags:        []database.DatabaseTag{},
-			Description: packout.T(desc, desc, desc),
+			Description: packout.T(desc, desc, desc, desc),
 		},
 		Habahiro:  spec.Habahiro,
 		Axes:      searchAxes(spec.Habahiro, spec.Axes),

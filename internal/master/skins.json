@@ -31,7 +31,8 @@
     "names": {
      "jp": "TYPE1",
      "en": "TYPE1",
-     "tw": "TYPE1"
+     "tw": "TYPE1",
+     "cn": "TYPE1"
     }
    },
    {
@@ -42,7 +43,8 @@
     "names": {
      "jp": "TYPE2",
      "en": "TYPE2",
-     "tw": "TYPE2"
+     "tw": "TYPE2",
+     "cn": "TYPE2"
     }
    },
    {
@@ -53,7 +55,8 @@
     "names": {
      "jp": "TYPE3",
      "en": "TYPE3",
-     "tw": "TYPE3"
+     "tw": "TYPE3",
+     "cn": "TYPE3"
     }
    },
    {
@@ -64,7 +67,8 @@
     "names": {
      "jp": "TYPE4",
      "en": "TYPE4",
-     "tw": "TYPE4"
+     "tw": "TYPE4",
+     "cn": "TYPE4"
     }
    },
    {
@@ -75,7 +79,8 @@
     "names": {
      "jp": "TYPE5",
      "en": "TYPE5",
-     "tw": "TYPE5"
+     "tw": "TYPE5",
+     "cn": "TYPE5"
     }
    },
    {
@@ -86,7 +91,8 @@
     "names": {
      "jp": "TYPE6",
      "en": "TYPE6",
-     "tw": "TYPE6"
+     "tw": "TYPE6",
+     "cn": "TYPE6"
     }
    },
    {
@@ -97,7 +103,8 @@
     "names": {
      "jp": "TYPE7",
      "en": "TYPE7",
-     "tw": "TYPE7"
+     "tw": "TYPE7",
+     "cn": "TYPE7"
     }
    }
   ],
@@ -110,7 +117,8 @@
     "names": {
      "jp": "レーンスキン00",
      "en": "レーンスキン00",
-     "tw": "軌跡外觀00"
+     "tw": "軌跡外觀00",
+     "cn": "按键条皮肤00"
     }
    },
    {
@@ -121,7 +129,8 @@
     "names": {
      "jp": "レーンスキン01",
      "en": "レーンスキン01",
-     "tw": "軌跡外觀01"
+     "tw": "軌跡外觀01",
+     "cn": "按键条皮肤01"
     }
    },
    {
@@ -132,7 +141,8 @@
     "names": {
      "jp": "レーンスキン02",
      "en": "レーンスキン02",
-     "tw": "軌跡外觀02"
+     "tw": "軌跡外觀02",
+     "cn": "按键条皮肤02"
     }
    },
    {
@@ -143,7 +153,8 @@
     "names": {
      "jp": "レーンスキン03",
      "en": "レーンスキン03",
-     "tw": "軌跡外觀03"
+     "tw": "軌跡外觀03",
+     "cn": "按键条皮肤03"
     }
    },
    {
@@ -154,7 +165,8 @@
     "names": {
      "jp": "レーンスキン04",
      "en": "レーンスキン04",
-     "tw": "軌跡外觀04"
+     "tw": "軌跡外觀04",
+     "cn": "按键条皮肤04"
     }
    },
    {
@@ -165,7 +177,8 @@
     "names": {
      "jp": "Poppin'Partyのレーン",
      "en": "Poppin'Party Lane",
-     "tw": "Poppin'Party的軌跡"
+     "tw": "Poppin'Party的軌跡",
+     "cn": "Poppin'Party的按键条皮肤"
     }
    },
    {
@@ -176,7 +189,8 @@
     "names": {
      "jp": "Afterglowのレーン",
      "en": "Afterglow Lane",
-     "tw": "Afterglow的軌跡"
+     "tw": "Afterglow的軌跡",
+     "cn": "Afterglow的按键条皮肤"
     }
    },
    {
@@ -187,7 +201,8 @@
     "names": {
      "jp": "Pastel＊Palettesのレーン",
      "en": "Pastel＊Palettes Lane",
-     "tw": "Pastel＊Palettes的軌跡"
+     "tw": "Pastel＊Palettes的軌跡",
+     "cn": "Pastel＊Palettes的按键条皮肤"
     }
    },
    {
@@ -198,7 +213,8 @@
     "names": {
      "jp": "Roseliaのレーン",
      "en": "Roselia Lane",
-     "tw": "Roselia的軌跡"
+     "tw": "Roselia的軌跡",
+     "cn": "Roselia的按键条皮肤"
     }
    },
    {
@@ -209,7 +225,8 @@
     "names": {
      "jp": "ハロー、ハッピーワールド！のレーン",
      "en": "Hello, Happy World! Lane",
-     "tw": "Hello，Happy World！的軌跡"
+     "tw": "Hello，Happy World！的軌跡",
+     "cn": "Hello, Happy World!的按键条皮肤"
     }
    },
    {
@@ -220,7 +237,8 @@
     "names": {
      "jp": "Morfonicaのレーン",
      "en": "Morfonica Lane",
-     "tw": "Morfonica的軌跡"
+     "tw": "Morfonica的軌跡",
+     "cn": "Morfonica的按键条皮肤"
     }
    },
    {
@@ -231,7 +249,8 @@
     "names": {
      "jp": "RAISE A SUILENのレーン",
      "en": "RAISE A SUILEN Lane",
-     "tw": "RAISE A SUILEN的軌跡"
+     "tw": "RAISE A SUILEN的軌跡",
+     "cn": "RAISE A SUILEN的按键条皮肤"
     }
    },
    {
@@ -242,7 +261,8 @@
     "names": {
      "jp": "レーンスキン05",
      "en": "レーンスキン05",
-     "tw": "軌跡外觀05"
+     "tw": "軌跡外觀05",
+     "cn": "按键条皮肤05"
     }
    },
    {
@@ -253,7 +273,8 @@
     "names": {
      "jp": "レーンスキン06",
      "en": "レーンスキン06",
-     "tw": "軌跡外觀06"
+     "tw": "軌跡外觀06",
+     "cn": "按键条皮肤06"
     }
    },
    {
@@ -264,7 +285,8 @@
     "names": {
      "jp": "MyGO!!!!!のレーン",
      "en": "MyGO!!!!! Lane",
-     "tw": "MyGO!!!!!的軌跡"
+     "tw": "MyGO!!!!!的軌跡",
+     "cn": "MyGO!!!!!的按键条皮肤"
     }
    }
   ],
@@ -276,7 +298,8 @@
     "names": {
      "jp": "エフェクトスキン00",
      "en": "エフェクトスキン00",
-     "tw": "エフェクトスキン00"
+     "tw": "エフェクトスキン00",
+     "cn": "エフェクトスキン00"
     }
    },
    {
@@ -286,7 +309,8 @@
     "names": {
      "jp": "エフェクトスキン01",
      "en": "エフェクトスキン01",
-     "tw": "エフェクトスキン01"
+     "tw": "エフェクトスキン01",
+     "cn": "エフェクトスキン01"
     }
    },
    {
@@ -296,7 +320,8 @@
     "names": {
      "jp": "エフェクトスキン02",
      "en": "エフェクトスキン02",
-     "tw": "エフェクトスキン02"
+     "tw": "エフェクトスキン02",
+     "cn": "エフェクトスキン02"
     }
    },
    {
@@ -306,7 +331,8 @@
     "names": {
      "jp": "エフェクトスキン03",
      "en": "エフェクトスキン03",
-     "tw": "エフェクトスキン03"
+     "tw": "エフェクトスキン03",
+     "cn": "エフェクトスキン03"
     }
    },
    {
@@ -316,7 +342,8 @@
     "names": {
      "jp": "エフェクトスキン04",
      "en": "エフェクトスキン04",
-     "tw": "エフェクトスキン04"
+     "tw": "エフェクトスキン04",
+     "cn": "エフェクトスキン04"
     }
    }
   ],
@@ -328,7 +355,8 @@
     "names": {
      "jp": "SEスキン00",
      "en": "SEスキン00",
-     "tw": "SEスキン00"
+     "tw": "SEスキン00",
+     "cn": "SEスキン00"
     }
    },
    {
@@ -338,7 +366,8 @@
     "names": {
      "jp": "SEスキン01",
      "en": "SEスキン01",
-     "tw": "SEスキン01"
+     "tw": "SEスキン01",
+     "cn": "SEスキン01"
     }
    },
    {
@@ -348,7 +377,8 @@
     "names": {
      "jp": "SEスキン02",
      "en": "SEスキン02",
-     "tw": "SEスキン02"
+     "tw": "SEスキン02",
+     "cn": "SEスキン02"
     }
    },
    {
@@ -358,7 +388,8 @@
     "names": {
      "jp": "SEスキン03",
      "en": "SEスキン03",
-     "tw": "SEスキン03"
+     "tw": "SEスキン03",
+     "cn": "SEスキン03"
     }
    }
   ],
@@ -370,7 +401,8 @@
     "names": {
      "jp": "TYPE1",
      "en": "TYPE1",
-     "tw": "TYPE1"
+     "tw": "TYPE1",
+     "cn": "TYPE1"
     }
    },
    {
@@ -380,7 +412,8 @@
     "names": {
      "jp": "TYPE2",
      "en": "TYPE2",
-     "tw": "TYPE2"
+     "tw": "TYPE2",
+     "cn": "TYPE2"
     }
    },
    {
@@ -390,7 +423,8 @@
     "names": {
      "jp": "TYPE3",
      "en": "TYPE3",
-     "tw": "TYPE3"
+     "tw": "TYPE3",
+     "cn": "TYPE3"
     }
    },
    {
@@ -400,7 +434,8 @@
     "names": {
      "jp": "TYPE4",
      "en": "TYPE4",
-     "tw": "TYPE4"
+     "tw": "TYPE4",
+     "cn": "TYPE4"
     }
    },
    {
@@ -410,7 +445,8 @@
     "names": {
      "jp": "TYPE5",
      "en": "TYPE5",
-     "tw": "TYPE5"
+     "tw": "TYPE5",
+     "cn": "TYPE5"
     }
    }
   ],
@@ -423,7 +459,8 @@
     "names": {
      "jp": "デフォルト背景",
      "en": "デフォルト背景",
-     "tw": "デフォルト背景"
+     "tw": "デフォルト背景",
+     "cn": "デフォルト背景"
     }
    },
    {
@@ -434,7 +471,8 @@
     "names": {
      "jp": "ストーリーイベント背景",
      "en": "ストーリーイベント背景",
-     "tw": "ストーリーイベント背景"
+     "tw": "ストーリーイベント背景",
+     "cn": "ストーリーイベント背景"
     }
    },
    {
@@ -445,7 +483,8 @@
     "names": {
      "jp": "チャレンジイベント背景",
      "en": "チャレンジイベント背景",
-     "tw": "チャレンジイベント背景"
+     "tw": "チャレンジイベント背景",
+     "cn": "チャレンジイベント背景"
     }
    },
    {
@@ -456,7 +495,8 @@
     "names": {
      "jp": "対バンイベント背景",
      "en": "対バンイベント背景",
-     "tw": "対バンイベント背景"
+     "tw": "対バンイベント背景",
+     "cn": "対バンイベント背景"
     }
    },
    {
@@ -467,7 +507,8 @@
     "names": {
      "jp": "ライブトライイベント背景",
      "en": "ライブトライイベント背景",
-     "tw": "ライブトライイベント背景"
+     "tw": "ライブトライイベント背景",
+     "cn": "ライブトライイベント背景"
     }
    },
    {
@@ -478,7 +519,8 @@
     "names": {
      "jp": "フェスイベント・ライブ背景",
      "en": "フェスイベント・ライブ背景",
-     "tw": "フェスイベント・ライブ背景"
+     "tw": "フェスイベント・ライブ背景",
+     "cn": "フェスイベント・ライブ背景"
     }
    }
   ]
@@ -1074,5 +1116,5 @@
    }
   }
  ],
- "names": "names: display names per server master (skinName of the normal rows, the season description (MasterSeasonSpecial.description) of Collaboration rows and limitedSkinName of Limited rows); the generators use the first of jp, en, tw, cn. Sources: JP 10.2.0.170, EN 9.4.0.190.0, TW 10.1.0.16 (official suite/master); CN 10.1.3 Collaboration / Limited rows from the reverse repo (menu-settings-ui-completion-10-1-4)."
+ "names": "names: display names per server master (skinName of the normal rows, the season description (MasterSeasonSpecial.description) of Collaboration rows and limitedSkinName of Limited rows). Sonolus locales show their server (ja: jp, en: en, zht: tw, zhs: cn), else the first of jp, en, tw, cn. Sources: JP 10.2.0.170, EN 9.4.0.190.0, TW 10.1.0.16, CN 10.1.3.6 (official suite/master)."
 }
