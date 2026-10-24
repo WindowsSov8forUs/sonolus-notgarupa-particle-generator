@@ -516,10 +516,7 @@ func assemble(spec master.Particle, parts, extra []*part, store *textureStore, t
 	if err != nil {
 		return nil, err
 	}
-	thumb, err := imgutil.EncodePNG(imgutil.Scale(packed.Texture, 128, 128*packed.Texture.Rect.Dy()/packed.Texture.Rect.Dx()))
-	if err != nil {
-		return nil, err
-	}
+	thumb := thumbnailPNG
 	title := spec.Title
 	desc := fmt.Sprintf("Tap effect %s + directional flick %s (both directional effect settings; light under the %s prefix), converted from the original Unity particle systems.", spec.Effect, spec.Directional, lightPrefix)
 	if spec.Habahiro {
