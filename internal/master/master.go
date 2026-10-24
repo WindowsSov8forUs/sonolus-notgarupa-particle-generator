@@ -221,6 +221,24 @@ func (m *Master) AxisName(axis, bundle string) string {
 // axisValue is one axis of an item.
 type axisValue struct{ axis, bundle string }
 
+// Axis is one live-setting axis of an item for searching: the axis (notes,
+// directionalFlick, lane, effect), its bundle and display name.
+type Axis struct {
+	Axis   string `json:"axis"`
+	Bundle string `json:"bundle"`
+	Name   string `json:"name"`
+}
+
+func (m *Master) searchAxes(axes []axisValue) []Axis {
+	var out []Axis
+	for _, a := range axes {
+		if a.axis != "judge" {
+			out = append(out, Axis{a.axis, a.bundle, m.AxisName(a.axis, a.bundle)})
+		}
+	}
+	return out
+}
+
 // compose lists an item's axes in order: the axes fixed by group are one
 // part, at the first of them (fixed(first fixed axis)); the other axes are
 // free(axis), skipped when empty.
@@ -277,6 +295,8 @@ type Skin struct {
 	Group *Special
 	// Title is the display title (the axes' names).
 	Title string
+	// Axes are the notes, directional and lane settings with their names.
+	Axes []Axis
 }
 
 func (s Skin) axes() []axisValue {
@@ -351,6 +371,7 @@ func (m *Master) Skins() []Skin {
 	}
 	for i := range out {
 		out[i].Title = m.skinTitle(out[i])
+		out[i].Axes = m.searchAxes(out[i].axes())
 	}
 	return out
 }
@@ -372,6 +393,7 @@ type Particle struct {
 	Habahiro            bool // Effect is the chart-forced habahiro tap effect
 	Group               *Special
 	Title               string
+	Axes                []Axis // tap effect and directional settings
 }
 
 func (p Particle) axes() []axisValue {
@@ -428,6 +450,7 @@ func (m *Master) Particles() []Particle {
 	}
 	for i := range out {
 		out[i].Title = m.particleTitle(out[i])
+		out[i].Axes = m.searchAxes(out[i].axes())
 	}
 	return out
 }

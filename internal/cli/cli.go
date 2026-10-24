@@ -139,3 +139,25 @@ func Fatal(err error) {
 	fmt.Fprintln(os.Stderr, "error:", err)
 	os.Exit(1)
 }
+
+// AxesFile is the file in a pack directory that lists the live settings of
+// the pack's items for a server's combination search:
+// {"<item type>": [{"name": …, "axes": [{"axis", "bundle", "name"}, …]}, …]}.
+const AxesFile = "garupa-axes.json"
+
+// ItemAxes are one item's live settings.
+type ItemAxes struct {
+	Name string `json:"name"`
+	Axes any    `json:"axes"`
+}
+
+// WriteAxes writes AxesFile for the items of one type into a pack directory,
+// in order (the pack's order; items arrive in completion order).
+func WriteAxes(pack, itemType string, items []ItemAxes, order []string) error {
+	rank := make(map[string]int, len(order))
+	for i, name := range order {
+		rank[name] = i
+	}
+	sort.SliceStable(items, func(i, j int) bool { return rank[items[i].Name] < rank[items[j].Name] })
+	return WriteJSON(filepath.Join(pack, AxesFile), map[string][]ItemAxes{itemType: items})
+}

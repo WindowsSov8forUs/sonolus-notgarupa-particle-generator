@@ -37,12 +37,16 @@ func main() {
 		cli.Fatal(err)
 	}
 	count := 0
+	var axes []cli.ItemAxes
 	err = particle.Generate(context.Background(), particle.Options{
 		Source:  particle.Source{CacheDir: common.Cache, AssetVersion: *assetVersion, Offline: common.Offline, Log: common.Logf()},
 		Workers: common.Workers,
 	}, func(r *particle.Result) error {
 		if err := tree.Add(r); err != nil {
 			return err
+		}
+		if r.Axes != nil {
+			axes = append(axes, cli.ItemAxes{Name: r.Item.Name, Axes: r.Axes})
 		}
 		count++
 		if common.Verbose {
@@ -58,6 +62,9 @@ func main() {
 		cli.Fatal(err)
 	}
 	if err := cli.Pack(source, pack, order); err != nil {
+		cli.Fatal(err)
+	}
+	if err := cli.WriteAxes(pack, "particles", axes, order); err != nil {
 		cli.Fatal(err)
 	}
 	fmt.Printf("%d particle items -> %s (%s)\n", count, common.Out, time.Since(start).Round(time.Second))
