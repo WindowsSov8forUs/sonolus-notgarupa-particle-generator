@@ -507,11 +507,7 @@ func assemble(spec master.Particle, parts, extra []*part, store *textureStore, t
 	if spec.Light {
 		setting = "light"
 	}
-	tap := spec.Effect
-	if spec.Habahiro {
-		tap = "HABAHIRO"
-	}
-	title := fmt.Sprintf("NotGarupa %s / %s (%s)", tap, spec.Directional, setting)
+	title := spec.Title
 	desc := fmt.Sprintf("Tap effect %s + directional flick %s (%s), converted from the original Unity particle systems.", spec.Effect, spec.Directional, setting)
 	if spec.Habahiro {
 		desc = fmt.Sprintf("For #HABAHIRO levels: tap effect HABAHIRO (with width variants _2 … _7 for multi-width notes) + directional flick %s (%s), converted from the original Unity particle systems.", spec.Directional, setting)
@@ -522,8 +518,8 @@ func assemble(spec master.Particle, parts, extra []*part, store *textureStore, t
 			Name:        name,
 			Version:     packout.ParticleVersion,
 			Title:       packout.T(title, title, title),
-			Subtitle:    packout.T("BanG Dream! Girls Band Party! (original effects)", "BanG Dream! 少女乐团派对！（原作特效）", "バンドリ！ ガールズバンドパーティ！（原作エフェクト）"),
-			Author:      packout.T("sonolus-notgarupa-particle-generator", "sonolus-notgarupa-particle-generator", "sonolus-notgarupa-particle-generator"),
+			Subtitle:    packout.T("BanG Dream! Girls Band Party!", "BanG Dream! 少女乐团派对！", "バンドリ！ ガールズバンドパーティ！"),
+			Author:      packout.T("GirlsBandParty", "GirlsBandParty", "GirlsBandParty"),
 			Tags:        []database.DatabaseTag{},
 			Description: packout.T(desc, desc, desc),
 		},

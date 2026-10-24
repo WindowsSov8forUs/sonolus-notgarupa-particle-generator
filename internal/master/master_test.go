@@ -16,11 +16,35 @@ func TestCounts(t *testing.T) {
 		}
 		names[s.Name()] = true
 	}
-	if skins[0].Name() != "notgarupa-skin00-skin00-skin00" {
-		t.Errorf("first skin %s", skins[0].Name())
+	for _, p := range particles {
+		if names[p.Name()] {
+			t.Errorf("duplicate particle %s", p.Name())
+		}
+		names[p.Name()] = true
 	}
-	if particles[0].Name() != "notgarupa-skin00-skin00normal" {
-		t.Errorf("first particle %s", particles[0].Name())
+	if skins[0].Name() != "garupa-skin00-skin00-skin00" || skins[0].Title != "TYPE1 / レーンスキン00 / TYPE1" {
+		t.Errorf("first skin %s %q", skins[0].Name(), skins[0].Title)
+	}
+	if particles[0].Name() != "garupa-skin00-skin00normal" || particles[0].Title != "エフェクトスキン00 / TYPE1 / 大" {
+		t.Errorf("first particle %s %q", particles[0].Name(), particles[0].Title)
+	}
+	// a fixed combination is written once, in the name and in the title
+	want := map[string]string{
+		"garupa-collabo23_summer_g-skin00": "collabo23_summer_g / TYPE1",
+		"garupa-skin_persona":              "ファントム復刻スキン",
+		"garupa-skin_april2021-skin00":     "エイプリルフール2021 / TYPE1",
+		"garupa-habahiro-skin00":           "HABAHIRO / TYPE1",
+	}
+	for _, s := range skins {
+		if title, ok := want[s.Name()]; ok {
+			if s.Title != title {
+				t.Errorf("%s: title %q, want %q", s.Name(), s.Title, title)
+			}
+			delete(want, s.Name())
+		}
+	}
+	for name := range want {
+		t.Errorf("missing skin %s", name)
 	}
 	if len(m.Specials()) != len(m.Special)-1 {
 		t.Errorf("specials %d", len(m.Specials()))

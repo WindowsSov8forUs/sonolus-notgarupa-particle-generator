@@ -27,43 +27,78 @@
     "id": 1,
     "bundle": "skin00",
     "name": "TYPE1",
-    "noteSyncEdgeMargin": 0
+    "noteSyncEdgeMargin": 0,
+    "names": {
+     "jp": "TYPE1",
+     "en": "TYPE1",
+     "tw": "TYPE1"
+    }
    },
    {
     "id": 2,
     "bundle": "skin01",
     "name": "TYPE2",
-    "noteSyncEdgeMargin": 0
+    "noteSyncEdgeMargin": 0,
+    "names": {
+     "jp": "TYPE2",
+     "en": "TYPE2",
+     "tw": "TYPE2"
+    }
    },
    {
     "id": 3,
     "bundle": "skin02",
     "name": "TYPE3",
-    "noteSyncEdgeMargin": 0
+    "noteSyncEdgeMargin": 0,
+    "names": {
+     "jp": "TYPE3",
+     "en": "TYPE3",
+     "tw": "TYPE3"
+    }
    },
    {
     "id": 4,
     "bundle": "skin03",
     "name": "TYPE4",
-    "noteSyncEdgeMargin": 0
+    "noteSyncEdgeMargin": 0,
+    "names": {
+     "jp": "TYPE4",
+     "en": "TYPE4",
+     "tw": "TYPE4"
+    }
    },
    {
     "id": 5,
     "bundle": "skin04",
     "name": "TYPE5",
-    "noteSyncEdgeMargin": 0
+    "noteSyncEdgeMargin": 0,
+    "names": {
+     "jp": "TYPE5",
+     "en": "TYPE5",
+     "tw": "TYPE5"
+    }
    },
    {
     "id": 6,
     "bundle": "skin06",
     "name": "TYPE6",
-    "noteSyncEdgeMargin": 0
+    "noteSyncEdgeMargin": 0,
+    "names": {
+     "jp": "TYPE6",
+     "en": "TYPE6",
+     "tw": "TYPE6"
+    }
    },
    {
     "id": 7,
     "bundle": "skin05",
     "name": "TYPE7",
-    "noteSyncEdgeMargin": 1.1
+    "noteSyncEdgeMargin": 1.1,
+    "names": {
+     "jp": "TYPE7",
+     "en": "TYPE7",
+     "tw": "TYPE7"
+    }
    }
   ],
   "lane": [
@@ -71,167 +106,312 @@
     "id": 1,
     "bundle": "skin00",
     "name": "レーンスキン00",
-    "skinType": "NORMAL"
+    "skinType": "NORMAL",
+    "names": {
+     "jp": "レーンスキン00",
+     "en": "レーンスキン00",
+     "tw": "軌跡外觀00"
+    }
    },
    {
     "id": 2,
     "bundle": "skin01",
     "name": "レーンスキン01",
-    "skinType": "NORMAL"
+    "skinType": "NORMAL",
+    "names": {
+     "jp": "レーンスキン01",
+     "en": "レーンスキン01",
+     "tw": "軌跡外觀01"
+    }
    },
    {
     "id": 3,
     "bundle": "skin02",
     "name": "レーンスキン02",
-    "skinType": "NORMAL"
+    "skinType": "NORMAL",
+    "names": {
+     "jp": "レーンスキン02",
+     "en": "レーンスキン02",
+     "tw": "軌跡外觀02"
+    }
    },
    {
     "id": 4,
     "bundle": "skin03",
     "name": "レーンスキン03",
-    "skinType": "NORMAL"
+    "skinType": "NORMAL",
+    "names": {
+     "jp": "レーンスキン03",
+     "en": "レーンスキン03",
+     "tw": "軌跡外觀03"
+    }
    },
    {
     "id": 5,
     "bundle": "skin04",
     "name": "レーンスキン04",
-    "skinType": "NORMAL"
+    "skinType": "NORMAL",
+    "names": {
+     "jp": "レーンスキン04",
+     "en": "レーンスキン04",
+     "tw": "軌跡外觀04"
+    }
    },
    {
     "id": 6,
     "bundle": "skin05",
     "name": "Poppin'Partyのレーン",
-    "skinType": "MISSION"
+    "skinType": "MISSION",
+    "names": {
+     "jp": "Poppin'Partyのレーン",
+     "en": "Poppin'Party Lane",
+     "tw": "Poppin'Party的軌跡"
+    }
    },
    {
     "id": 7,
     "bundle": "skin06",
     "name": "Afterglowのレーン",
-    "skinType": "MISSION"
+    "skinType": "MISSION",
+    "names": {
+     "jp": "Afterglowのレーン",
+     "en": "Afterglow Lane",
+     "tw": "Afterglow的軌跡"
+    }
    },
    {
     "id": 8,
     "bundle": "skin07",
     "name": "Pastel＊Palettesのレーン",
-    "skinType": "MISSION"
+    "skinType": "MISSION",
+    "names": {
+     "jp": "Pastel＊Palettesのレーン",
+     "en": "Pastel＊Palettes Lane",
+     "tw": "Pastel＊Palettes的軌跡"
+    }
    },
    {
     "id": 9,
     "bundle": "skin08",
     "name": "Roseliaのレーン",
-    "skinType": "MISSION"
+    "skinType": "MISSION",
+    "names": {
+     "jp": "Roseliaのレーン",
+     "en": "Roselia Lane",
+     "tw": "Roselia的軌跡"
+    }
    },
    {
     "id": 10,
     "bundle": "skin09",
     "name": "ハロー、ハッピーワールド！のレーン",
-    "skinType": "MISSION"
+    "skinType": "MISSION",
+    "names": {
+     "jp": "ハロー、ハッピーワールド！のレーン",
+     "en": "Hello, Happy World! Lane",
+     "tw": "Hello，Happy World！的軌跡"
+    }
    },
    {
     "id": 11,
     "bundle": "skin10",
     "name": "Morfonicaのレーン",
-    "skinType": "MISSION"
+    "skinType": "MISSION",
+    "names": {
+     "jp": "Morfonicaのレーン",
+     "en": "Morfonica Lane",
+     "tw": "Morfonica的軌跡"
+    }
    },
    {
     "id": 12,
     "bundle": "skin11",
     "name": "RAISE A SUILENのレーン",
-    "skinType": "MISSION"
+    "skinType": "MISSION",
+    "names": {
+     "jp": "RAISE A SUILENのレーン",
+     "en": "RAISE A SUILEN Lane",
+     "tw": "RAISE A SUILEN的軌跡"
+    }
    },
    {
     "id": 13,
     "bundle": "skin12",
     "name": "レーンスキン05",
-    "skinType": "NORMAL"
+    "skinType": "NORMAL",
+    "names": {
+     "jp": "レーンスキン05",
+     "en": "レーンスキン05",
+     "tw": "軌跡外觀05"
+    }
    },
    {
     "id": 14,
     "bundle": "skin13",
     "name": "レーンスキン06",
-    "skinType": "NORMAL"
+    "skinType": "NORMAL",
+    "names": {
+     "jp": "レーンスキン06",
+     "en": "レーンスキン06",
+     "tw": "軌跡外觀06"
+    }
    },
    {
     "id": 15,
     "bundle": "skin14",
     "name": "MyGO!!!!!のレーン",
-    "skinType": "MISSION"
+    "skinType": "MISSION",
+    "names": {
+     "jp": "MyGO!!!!!のレーン",
+     "en": "MyGO!!!!! Lane",
+     "tw": "MyGO!!!!!的軌跡"
+    }
    }
   ],
   "effect": [
    {
     "id": 1,
     "bundle": "skin00",
-    "name": "エフェクトスキン00"
+    "name": "エフェクトスキン00",
+    "names": {
+     "jp": "エフェクトスキン00",
+     "en": "エフェクトスキン00",
+     "tw": "エフェクトスキン00"
+    }
    },
    {
     "id": 2,
     "bundle": "skin01",
-    "name": "エフェクトスキン01"
+    "name": "エフェクトスキン01",
+    "names": {
+     "jp": "エフェクトスキン01",
+     "en": "エフェクトスキン01",
+     "tw": "エフェクトスキン01"
+    }
    },
    {
     "id": 3,
     "bundle": "skin02",
-    "name": "エフェクトスキン02"
+    "name": "エフェクトスキン02",
+    "names": {
+     "jp": "エフェクトスキン02",
+     "en": "エフェクトスキン02",
+     "tw": "エフェクトスキン02"
+    }
    },
    {
     "id": 4,
     "bundle": "skin03",
-    "name": "エフェクトスキン03"
+    "name": "エフェクトスキン03",
+    "names": {
+     "jp": "エフェクトスキン03",
+     "en": "エフェクトスキン03",
+     "tw": "エフェクトスキン03"
+    }
    },
    {
     "id": 5,
     "bundle": "skin04",
-    "name": "エフェクトスキン04"
+    "name": "エフェクトスキン04",
+    "names": {
+     "jp": "エフェクトスキン04",
+     "en": "エフェクトスキン04",
+     "tw": "エフェクトスキン04"
+    }
    }
   ],
   "soundEffect": [
    {
     "id": 1,
     "bundle": "skin00",
-    "name": "SEスキン00"
+    "name": "SEスキン00",
+    "names": {
+     "jp": "SEスキン00",
+     "en": "SEスキン00",
+     "tw": "SEスキン00"
+    }
    },
    {
     "id": 2,
     "bundle": "skin01",
-    "name": "SEスキン01"
+    "name": "SEスキン01",
+    "names": {
+     "jp": "SEスキン01",
+     "en": "SEスキン01",
+     "tw": "SEスキン01"
+    }
    },
    {
     "id": 3,
     "bundle": "skin02",
-    "name": "SEスキン02"
+    "name": "SEスキン02",
+    "names": {
+     "jp": "SEスキン02",
+     "en": "SEスキン02",
+     "tw": "SEスキン02"
+    }
    },
    {
     "id": 4,
     "bundle": "skin03",
-    "name": "SEスキン03"
+    "name": "SEスキン03",
+    "names": {
+     "jp": "SEスキン03",
+     "en": "SEスキン03",
+     "tw": "SEスキン03"
+    }
    }
   ],
   "directionalFlick": [
    {
     "id": 1,
     "bundle": "skin00",
-    "name": "TYPE1"
+    "name": "TYPE1",
+    "names": {
+     "jp": "TYPE1",
+     "en": "TYPE1",
+     "tw": "TYPE1"
+    }
    },
    {
     "id": 2,
     "bundle": "skin01",
-    "name": "TYPE2"
+    "name": "TYPE2",
+    "names": {
+     "jp": "TYPE2",
+     "en": "TYPE2",
+     "tw": "TYPE2"
+    }
    },
    {
     "id": 3,
     "bundle": "skin02",
-    "name": "TYPE3"
+    "name": "TYPE3",
+    "names": {
+     "jp": "TYPE3",
+     "en": "TYPE3",
+     "tw": "TYPE3"
+    }
    },
    {
     "id": 4,
     "bundle": "skin03",
-    "name": "TYPE4"
+    "name": "TYPE4",
+    "names": {
+     "jp": "TYPE4",
+     "en": "TYPE4",
+     "tw": "TYPE4"
+    }
    },
    {
     "id": 5,
     "bundle": "skin04",
-    "name": "TYPE5"
+    "name": "TYPE5",
+    "names": {
+     "jp": "TYPE5",
+     "en": "TYPE5",
+     "tw": "TYPE5"
+    }
    }
   ],
   "background": [
@@ -239,37 +419,67 @@
     "id": 1,
     "bundle": "skin00",
     "name": "デフォルト背景",
-    "eventType": null
+    "eventType": null,
+    "names": {
+     "jp": "デフォルト背景",
+     "en": "デフォルト背景",
+     "tw": "デフォルト背景"
+    }
    },
    {
     "id": 2,
     "bundle": "skin01",
     "name": "ストーリーイベント背景",
-    "eventType": "story"
+    "eventType": "story",
+    "names": {
+     "jp": "ストーリーイベント背景",
+     "en": "ストーリーイベント背景",
+     "tw": "ストーリーイベント背景"
+    }
    },
    {
     "id": 3,
     "bundle": "skin02",
     "name": "チャレンジイベント背景",
-    "eventType": "challenge"
+    "eventType": "challenge",
+    "names": {
+     "jp": "チャレンジイベント背景",
+     "en": "チャレンジイベント背景",
+     "tw": "チャレンジイベント背景"
+    }
    },
    {
     "id": 4,
     "bundle": "skin03",
     "name": "対バンイベント背景",
-    "eventType": "versus"
+    "eventType": "versus",
+    "names": {
+     "jp": "対バンイベント背景",
+     "en": "対バンイベント背景",
+     "tw": "対バンイベント背景"
+    }
    },
    {
     "id": 5,
     "bundle": "skin04",
     "name": "ライブトライイベント背景",
-    "eventType": "live_try"
+    "eventType": "live_try",
+    "names": {
+     "jp": "ライブトライイベント背景",
+     "en": "ライブトライイベント背景",
+     "tw": "ライブトライイベント背景"
+    }
    },
    {
     "id": 7,
     "bundle": "skin_teamlivefestival",
     "name": "フェスイベント・ライブ背景",
-    "eventType": "festival"
+    "eventType": "festival",
+    "names": {
+     "jp": "フェスイベント・ライブ背景",
+     "en": "フェスイベント・ライブ背景",
+     "tw": "フェスイベント・ライブ背景"
+    }
    }
   ]
  },
@@ -285,7 +495,13 @@
     "notes": "skin_persona",
     "soundEffect": "skin_persona"
    },
-   "noteSyncEdgeMargin": 0
+   "noteSyncEdgeMargin": 0,
+   "names": {
+    "jp": "ペルソナコラボ",
+    "en": "ペルソナコラボ",
+    "tw": "ペルソナコラボ",
+    "cn": "ペルソナコラボ"
+   }
   },
   {
    "kind": "collaboration",
@@ -298,7 +514,13 @@
     "notes": "skin_miku",
     "soundEffect": "skin_miku"
    },
-   "noteSyncEdgeMargin": 0
+   "noteSyncEdgeMargin": 0,
+   "names": {
+    "jp": "ミクコラボ",
+    "en": "ミクコラボ",
+    "tw": "ミクコラボ",
+    "cn": "ミクコラボ"
+   }
   },
   {
    "kind": "collaboration",
@@ -313,7 +535,12 @@
     "judge": "skinapril2019",
     "cutIn": "skinapril2019"
    },
-   "noteSyncEdgeMargin": 0
+   "noteSyncEdgeMargin": 0,
+   "names": {
+    "jp": "エイプリルフール2019",
+    "en": "エイプリルフール2019",
+    "cn": "愚人节2019"
+   }
   },
   {
    "kind": "collaboration",
@@ -326,7 +553,13 @@
     "notes": "skin_cafe",
     "soundEffect": "skin_cafe"
    },
-   "noteSyncEdgeMargin": 0
+   "noteSyncEdgeMargin": 0,
+   "names": {
+    "jp": "ごちうさコラボ",
+    "en": "ごちうさコラボ",
+    "tw": "ごちうさコラボ",
+    "cn": "ごちうさコラボ"
+   }
   },
   {
    "kind": "collaboration",
@@ -339,7 +572,12 @@
     "notes": "skin_miku",
     "soundEffect": "skin_miku"
    },
-   "noteSyncEdgeMargin": 0
+   "noteSyncEdgeMargin": 0,
+   "names": {
+    "jp": "ミクコラボ",
+    "en": "ミクコラボ",
+    "tw": "ミクコラボ"
+   }
   },
   {
    "kind": "collaboration",
@@ -352,7 +590,13 @@
     "notes": "skin_maid",
     "soundEffect": "skin_maid"
    },
-   "noteSyncEdgeMargin": 0
+   "noteSyncEdgeMargin": 0,
+   "names": {
+    "jp": "めいどコラボ",
+    "en": "めいどコラボ",
+    "tw": "めいどコラボ",
+    "cn": "めいどコラボ"
+   }
   },
   {
    "kind": "collaboration",
@@ -362,7 +606,12 @@
     "background": "skin_gbp2020",
     "lane": "skin_gbp2020"
    },
-   "noteSyncEdgeMargin": 0
+   "noteSyncEdgeMargin": 0,
+   "names": {
+    "jp": "5/3イベントスキン",
+    "en": "5/3イベントスキン",
+    "cn": "5/3イベントスキン"
+   }
   },
   {
    "kind": "collaboration",
@@ -375,7 +624,13 @@
     "notes": "skin_coin",
     "soundEffect": "skin_coin"
    },
-   "noteSyncEdgeMargin": 0
+   "noteSyncEdgeMargin": 0,
+   "names": {
+    "jp": "コインコラボ",
+    "en": "コインコラボ",
+    "tw": "コインコラボ",
+    "cn": "コインコラボ"
+   }
   },
   {
    "kind": "collaboration",
@@ -388,7 +643,12 @@
     "notes": "skin_miku",
     "soundEffect": "skin_miku"
    },
-   "noteSyncEdgeMargin": 0
+   "noteSyncEdgeMargin": 0,
+   "names": {
+    "jp": "ミクコラボ",
+    "en": "ミクコラボ",
+    "tw": "ミクコラボ"
+   }
   },
   {
    "kind": "collaboration",
@@ -401,7 +661,13 @@
     "notes": "skin_witch",
     "soundEffect": "skin_witch"
    },
-   "noteSyncEdgeMargin": 0
+   "noteSyncEdgeMargin": 0,
+   "names": {
+    "jp": "ウィッチコラボ",
+    "en": "ウィッチコラボ",
+    "tw": "ウィッチコラボ",
+    "cn": "ウィッチコラボ"
+   }
   },
   {
    "kind": "collaboration",
@@ -414,7 +680,11 @@
     "soundEffect": "skinapril2021",
     "judge": "skinapril2021"
    },
-   "noteSyncEdgeMargin": 0
+   "noteSyncEdgeMargin": 0,
+   "names": {
+    "jp": "エイプリルフール2021",
+    "tw": "エイプリルフール2021"
+   }
   },
   {
    "kind": "collaboration",
@@ -427,7 +697,13 @@
     "notes": "skin_stage",
     "soundEffect": "skin_stage"
    },
-   "noteSyncEdgeMargin": 0
+   "noteSyncEdgeMargin": 0,
+   "names": {
+    "jp": "ゾンビコラボ",
+    "en": "ゾンビコラボ",
+    "tw": "ゾンビコラボ",
+    "cn": "ゾンビコラボ"
+   }
   },
   {
    "kind": "collaboration",
@@ -437,7 +713,12 @@
     "background": "skin_gbp2020",
     "lane": "skin_gbp2020"
    },
-   "noteSyncEdgeMargin": 0
+   "noteSyncEdgeMargin": 0,
+   "names": {
+    "jp": "GBP延期企画スキン",
+    "tw": "GBP延期企画スキン",
+    "cn": "GBP延期企画スキン"
+   }
   },
   {
    "kind": "collaboration",
@@ -451,7 +732,13 @@
     "soundEffect": "skin_persona",
     "directionalFlick": "skin_persona"
    },
-   "noteSyncEdgeMargin": 0
+   "noteSyncEdgeMargin": 0,
+   "names": {
+    "jp": "ファントム復刻スキン",
+    "en": "ファントム復刻スキン",
+    "tw": "ファントム復刻スキン",
+    "cn": "ファントム復刻スキン"
+   }
   },
   {
    "kind": "collaboration",
@@ -464,7 +751,11 @@
     "notes": "skin_delta",
     "soundEffect": "skin_delta"
    },
-   "noteSyncEdgeMargin": 0
+   "noteSyncEdgeMargin": 0,
+   "names": {
+    "jp": "deltaコラボ",
+    "en": "deltaコラボ"
+   }
   },
   {
    "kind": "collaboration",
@@ -473,7 +764,12 @@
    "components": {
     "background": "skin_5th"
    },
-   "noteSyncEdgeMargin": 0
+   "noteSyncEdgeMargin": 0,
+   "names": {
+    "jp": "5周年特別エリア会話③",
+    "tw": "5週年特別區域對話③",
+    "cn": "3.5周年特别区域对话③"
+   }
   },
   {
    "kind": "collaboration",
@@ -484,7 +780,13 @@
     "lane": "skin_bike",
     "judge": "skin_bike"
    },
-   "noteSyncEdgeMargin": 0
+   "noteSyncEdgeMargin": 0,
+   "names": {
+    "jp": "bikeコラボ",
+    "en": "bikeコラボ",
+    "tw": "bikeコラボ",
+    "cn": "bikeコラボ"
+   }
   },
   {
    "kind": "collaboration",
@@ -497,7 +799,13 @@
     "notes": "skin_maid",
     "soundEffect": "skin_maid"
    },
-   "noteSyncEdgeMargin": 0
+   "noteSyncEdgeMargin": 0,
+   "names": {
+    "jp": "めいどコラボ",
+    "en": "めいどコラボ",
+    "tw": "めいどコラボ",
+    "cn": "めいどコラボ"
+   }
   },
   {
    "kind": "collaboration",
@@ -507,7 +815,13 @@
     "background": "skin_satan",
     "lane": "skin_satan"
    },
-   "noteSyncEdgeMargin": 0
+   "noteSyncEdgeMargin": 0,
+   "names": {
+    "jp": "satanコラボ",
+    "en": "satanコラボ",
+    "tw": "satanコラボ",
+    "cn": "satanコラボ"
+   }
   },
   {
    "kind": "collaboration",
@@ -517,7 +831,10 @@
     "background": "skin_gbp2020",
     "lane": "skin_gbp2020"
    },
-   "noteSyncEdgeMargin": 0
+   "noteSyncEdgeMargin": 0,
+   "names": {
+    "jp": "GBP2022スキン"
+   }
   },
   {
    "kind": "collaboration",
@@ -527,7 +844,11 @@
     "notes": "skin_april2018",
     "soundEffect": "skin_april2018"
    },
-   "noteSyncEdgeMargin": 0
+   "noteSyncEdgeMargin": 0,
+   "names": {
+    "jp": "エイプリルフール2023_1",
+    "cn": "エイプリルフール2023_1"
+   }
   },
   {
    "kind": "collaboration",
@@ -541,7 +862,11 @@
     "soundEffect": "skin_april2019",
     "judge": "skin_april2019"
    },
-   "noteSyncEdgeMargin": 0
+   "noteSyncEdgeMargin": 0,
+   "names": {
+    "jp": "エイプリルフール2023_2",
+    "cn": "エイプリルフール2023_2"
+   }
   },
   {
    "kind": "collaboration",
@@ -554,7 +879,11 @@
     "soundEffect": "skinapril2021",
     "judge": "skinapril2021"
    },
-   "noteSyncEdgeMargin": 0
+   "noteSyncEdgeMargin": 0,
+   "names": {
+    "jp": "エイプリルフール2023_3",
+    "cn": "エイプリルフール2023_3"
+   }
   },
   {
    "kind": "collaboration",
@@ -565,7 +894,13 @@
     "lane": "collabo23_summer_g",
     "notes": "collabo23_summer_g"
    },
-   "noteSyncEdgeMargin": 0
+   "noteSyncEdgeMargin": 0,
+   "names": {
+    "jp": "collabo23_summer_g",
+    "en": "collabo23_summer_g",
+    "tw": "collabo23_summer_g",
+    "cn": "collabo23_summer_g"
+   }
   },
   {
    "kind": "collaboration",
@@ -578,7 +913,11 @@
     "notes": "skin_delta",
     "soundEffect": "skin_delta"
    },
-   "noteSyncEdgeMargin": 0
+   "noteSyncEdgeMargin": 0,
+   "names": {
+    "jp": "2023_d_collabo",
+    "tw": "2023_d_collabo"
+   }
   },
   {
    "kind": "collaboration",
@@ -589,7 +928,11 @@
     "lane": "skin_april_2024",
     "notes": "skin_april_2024"
    },
-   "noteSyncEdgeMargin": 0
+   "noteSyncEdgeMargin": 0,
+   "names": {
+    "jp": "エイプリルフール2024",
+    "cn": "エイプリルフール2024"
+   }
   },
   {
    "kind": "collaboration",
@@ -599,7 +942,13 @@
     "background": "skin_satan",
     "lane": "skin_satan"
    },
-   "noteSyncEdgeMargin": 0
+   "noteSyncEdgeMargin": 0,
+   "names": {
+    "jp": "2024_s_collabo",
+    "en": "2024_s_collabo",
+    "tw": "2024_s_collabo",
+    "cn": "2024_s_collabo"
+   }
   },
   {
    "kind": "collaboration",
@@ -610,7 +959,13 @@
     "lane": "skin_collabo24_autumn_i",
     "notes": "skin_collabo24_autumn_i"
    },
-   "noteSyncEdgeMargin": 0
+   "noteSyncEdgeMargin": 0,
+   "names": {
+    "jp": "2024_i_collabo",
+    "en": "2024_i_collabo",
+    "tw": "2024_i_collabo",
+    "cn": "2024_i_collabo"
+   }
   },
   {
    "kind": "collaboration",
@@ -623,7 +978,13 @@
     "notes": "skin_stage",
     "soundEffect": "skin_stage"
    },
-   "noteSyncEdgeMargin": 0
+   "noteSyncEdgeMargin": 0,
+   "names": {
+    "jp": "2025_stage_collabo",
+    "en": "2025_stage_collabo",
+    "tw": "2025_stage_collabo",
+    "cn": "2025_stage_collabo"
+   }
   },
   {
    "kind": "collaboration",
@@ -634,7 +995,11 @@
     "lane": "skin_collabo25_autumn_s",
     "notes": "skin_collabo25_autumn_s"
    },
-   "noteSyncEdgeMargin": 0
+   "noteSyncEdgeMargin": 0,
+   "names": {
+    "jp": "2025_s_collabo",
+    "cn": "2025_s_collabo"
+   }
   },
   {
    "kind": "limited",
@@ -644,7 +1009,13 @@
     "notes": "skin_april2018",
     "soundEffect": "skin_april2018"
    },
-   "noteSyncEdgeMargin": 0
+   "noteSyncEdgeMargin": 0,
+   "names": {
+    "jp": "エイプリルフール2018",
+    "en": "Special Skin 1",
+    "tw": "愚人節2018",
+    "cn": "愚人节2018"
+   }
   },
   {
    "kind": "limited",
@@ -658,7 +1029,13 @@
     "soundEffect": "skin_april2019",
     "judge": "skin_april2019"
    },
-   "noteSyncEdgeMargin": 0
+   "noteSyncEdgeMargin": 0,
+   "names": {
+    "jp": "エイプリルフール2019",
+    "en": "Special Skin 2",
+    "tw": "愚人節2019",
+    "cn": "愚人节2019"
+   }
   },
   {
    "kind": "limited",
@@ -671,7 +1048,13 @@
     "soundEffect": "skinapril2021",
     "judge": "skinapril2021"
    },
-   "noteSyncEdgeMargin": 0
+   "noteSyncEdgeMargin": 0,
+   "names": {
+    "jp": "エイプリルフール2021",
+    "en": "Special Skin 3",
+    "tw": "愚人節2021",
+    "cn": "愚人节2021"
+   }
   },
   {
    "kind": "limited",
@@ -682,7 +1065,26 @@
     "lane": "skin_april_2024",
     "notes": "skin_april_2024"
    },
-   "noteSyncEdgeMargin": 0
+   "noteSyncEdgeMargin": 0,
+   "names": {
+    "jp": "エイプリルフール2024",
+    "en": "Special Skin 4",
+    "tw": "愚人節2024",
+    "cn": "愚人节2024"
+   }
   }
- ]
+ ],
+ "wording": {
+  "directionalEffectNormal": {
+   "jp": "大",
+   "en": "Increase",
+   "tw": "大"
+  },
+  "directionalEffectLight": {
+   "jp": "小",
+   "en": "Decrease",
+   "tw": "小"
+  }
+ },
+ "names": "names: display names per server master (skinName of the normal rows, the season description (MasterSeasonSpecial.description) of Collaboration rows, limitedSkinName of Limited rows, and the live-settings wording of the directional effect setting); the generators use the first of jp, en, tw, cn. Sources: JP 10.2.0.170, EN 9.4.0.190.0, TW 10.1.0.16 (official suite/master); CN 10.1.3 Collaboration / Limited rows from the reverse repo (menu-settings-ui-completion-10-1-4)."
 }
