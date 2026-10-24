@@ -2,12 +2,14 @@
 package cli
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"flag"
 	"fmt"
 	"os"
 	"path/filepath"
+	"sort"
 
 	"github.com/WindowsSov8forUs/sonolus-pack-go/packer"
 )
@@ -46,9 +48,78 @@ func (logger) Warning(args ...any) {
 	fmt.Fprintln(os.Stderr, append([]any{"[pack][warn]"}, args...)...)
 }
 
-// Pack runs sonolus-pack-go on a source tree.
-func Pack(source, output string) error {
-	return packer.Pack(context.Background(), packer.Options{Input: source, Output: output, Logger: logger{}})
+// Pack runs sonolus-pack-go on a source tree and lists the items of the
+// pack's db.json in order (the generator's order, the original master's);
+// sonolus-pack lists them by directory name.
+func Pack(source, output string, order []string) error {
+	if err := packer.Pack(context.Background(), packer.Options{Input: source, Output: output, Logger: logger{}}); err != nil {
+		return err
+	}
+	return orderDB(filepath.Join(output, "db.json"), order)
+}
+
+// orderDB sorts every item list of a db.json by the position of the item
+// name in order (names not in order keep their relative order, last). The
+// top-level keys and the item JSON stay as they are.
+func orderDB(path string, order []string) error {
+	data, err := os.ReadFile(path)
+	if err != nil {
+		return err
+	}
+	rank := make(map[string]int, len(order))
+	for i, name := range order {
+		rank[name] = i
+	}
+	pos := func(item json.RawMessage) int {
+		var it struct {
+			Name string `json:"name"`
+		}
+		if json.Unmarshal(item, &it) == nil {
+			if i, ok := rank[it.Name]; ok {
+				return i
+			}
+		}
+		return len(order)
+	}
+	dec := json.NewDecoder(bytes.NewReader(data))
+	if tok, err := dec.Token(); err != nil || tok != json.Delim('{') {
+		return fmt.Errorf("%s: not a JSON object", path)
+	}
+	var out bytes.Buffer
+	out.WriteByte('{')
+	for first := true; dec.More(); first = false {
+		tok, err := dec.Token()
+		if err != nil {
+			return fmt.Errorf("%s: %w", path, err)
+		}
+		key, _ := json.Marshal(tok)
+		var value json.RawMessage
+		if err := dec.Decode(&value); err != nil {
+			return fmt.Errorf("%s: %w", path, err)
+		}
+		var items []json.RawMessage
+		if json.Unmarshal(value, &items) == nil && len(items) > 1 {
+			sort.SliceStable(items, func(i, j int) bool { return pos(items[i]) < pos(items[j]) })
+			var list bytes.Buffer
+			list.WriteByte('[')
+			for i, item := range items {
+				if i > 0 {
+					list.WriteByte(',')
+				}
+				list.Write(item)
+			}
+			list.WriteByte(']')
+			value = list.Bytes()
+		}
+		if !first {
+			out.WriteByte(',')
+		}
+		out.Write(key)
+		out.WriteByte(':')
+		out.Write(value)
+	}
+	out.WriteByte('}')
+	return os.WriteFile(path, out.Bytes(), 0o644)
 }
 
 // WriteJSON writes v as indented JSON, creating the parent directory.

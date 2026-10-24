@@ -53,7 +53,11 @@ func main() {
 	if err != nil {
 		cli.Fatal(err)
 	}
-	if err := cli.Pack(source, pack); err != nil {
+	order, err := particle.Items()
+	if err != nil {
+		cli.Fatal(err)
+	}
+	if err := cli.Pack(source, pack, order); err != nil {
 		cli.Fatal(err)
 	}
 	fmt.Printf("%d particle items -> %s (%s)\n", count, common.Out, time.Since(start).Round(time.Second))
