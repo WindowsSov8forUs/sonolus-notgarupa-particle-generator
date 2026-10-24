@@ -299,8 +299,8 @@ type Background struct {
 	Habahiro bool
 }
 
-// Backgrounds returns every background bundle (each becomes a normal and,
-// when the bundle has one, a fever item).
+// Backgrounds returns every background bundle (each becomes one background
+// item from its liveBG_normal texture).
 func (m *Master) Backgrounds() []Background {
 	var out []Background
 	seen := map[string]bool{}
