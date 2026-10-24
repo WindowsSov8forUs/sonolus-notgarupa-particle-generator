@@ -263,7 +263,8 @@ func (m *Master) DirectionalFlicks() []string {
 	return out
 }
 
-// Skin is one skin item: note skin, lane, directional skin and judge skin.
+// Skin is one skin item: note skin, directional skin, lane and judge skin
+// (the order of names, titles and Skins()).
 type Skin struct {
 	Notes, Lane, Directional, Judge string
 	// Habahiro marks the chart-forced HABAHIRO item: Notes, Lane and Judge
@@ -279,7 +280,7 @@ type Skin struct {
 }
 
 func (s Skin) axes() []axisValue {
-	return []axisValue{{"notes", s.Notes}, {"lane", s.Lane}, {"directionalFlick", s.Directional}, {"judge", s.Judge}}
+	return []axisValue{{"notes", s.Notes}, {"directionalFlick", s.Directional}, {"lane", s.Lane}, {"judge", s.Judge}}
 }
 
 // freeJudge drops the default judge skin (fixed in the original).
@@ -321,8 +322,8 @@ func (m *Master) Skins() []Skin {
 	seen := map[string]int{}
 	add := func(s *Special) {
 		for _, n := range pick(s, "notes", bundles(m.Normal.Notes)) {
-			for _, l := range pick(s, "lane", bundles(m.Normal.Lane)) {
-				for _, d := range pick(s, "directionalFlick", bundles(m.Normal.DirectionalFlick)) {
+			for _, d := range pick(s, "directionalFlick", bundles(m.Normal.DirectionalFlick)) {
+				for _, l := range pick(s, "lane", bundles(m.Normal.Lane)) {
 					sk := Skin{Notes: n, Lane: l, Directional: d, Judge: pick(s, "judge", []string{DefaultJudge})[0], NoteSyncEdgeMargin: margin[n], Group: s}
 					if s != nil {
 						if _, ok := s.Components["notes"]; ok {

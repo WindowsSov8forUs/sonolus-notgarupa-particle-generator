@@ -23,7 +23,7 @@ func TestCounts(t *testing.T) {
 		}
 		names[p.Name()] = true
 	}
-	if skins[0].Name() != "garupa-skin00-skin00-skin00" || skins[0].Title != "TYPE1 / レーンスキン00 / TYPE1" {
+	if skins[0].Name() != "garupa-skin00-skin00-skin00" || skins[0].Title != "TYPE1 / TYPE1 / レーンスキン00" {
 		t.Errorf("first skin %s %q", skins[0].Name(), skins[0].Title)
 	}
 	if particles[0].Name() != "garupa-skin00-skin00" || particles[0].Title != "エフェクトスキン00 / TYPE1" {
