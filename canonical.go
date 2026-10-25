@@ -9,7 +9,7 @@ import (
 // Canonical effect durations. A Sonolus particle effect plays its particles
 // in fractions of the duration the engine spawns it with, and an engine
 // cannot read item metadata, so every item puts each effect family on one
-// fixed duration that the engine spawns it with (the NotGarupa engine's
+// fixed duration that the engine spawns it with (the Ex-Garupa engine's
 // dur* constants):
 //   - one-shot effects: the longest one of the family over every tap effect
 //     skin; a shorter effect keeps its timing and ends early;
