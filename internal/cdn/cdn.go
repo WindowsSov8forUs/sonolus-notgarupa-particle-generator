@@ -1,5 +1,7 @@
-// Package cdn downloads original asset bundles from the game's content CDN
-// at a pinned asset version, with a disk cache.
+// Package cdn downloads original asset bundles from the game's content CDNs
+// at pinned asset versions, with a disk cache: the JP content CDN, and the
+// mainland (CN) asset bundle CDN for the bundles of master rows that exist
+// only in the CN master (Client.Servers).
 package cdn
 
 import (
@@ -12,15 +14,29 @@ import (
 	"time"
 )
 
-// PinnedVersion is the asset version ("<data version>_<hash>") whose bundles
-// the generator was verified against.
-const PinnedVersion = "10.1.0.200_e019f5bbbae4e182041ed1731df6e08b7708aa3536aefaeaeec04b1951c4d048"
+// PinnedVersion is the JP asset version ("<data version>_<hash>") whose
+// bundles the generator was verified against. 10.2.0.190 with the version
+// hash of the 10.2.0 (231) client is the first version that has the Limited 5
+// bundles (skin_collabo_2026); bundles new since 10.1.0.200 answer 403 under
+// older versions.
+const PinnedVersion = "10.2.0.190_b3da1643334f3d8433dbffe65574774e5743b2e72bcd44920f09efc8270aad9d"
 
-const root = "https://content.garupa.jp/Release/"
+// PinnedCNVersion is the mainland bundle version (the version of every
+// AssetBundleInfo entry of the CN 10.1.3 client; mainland URLs have no hash).
+const PinnedCNVersion = "10.1.3.0"
+
+const (
+	root   = "https://content.garupa.jp/Release/"
+	rootCN = "https://line3-prod-patch-bd.bilibiligame.net/assetbundle/"
+)
 
 type Client struct {
-	Version  string // empty: PinnedVersion
-	CacheDir string // cache root; bundles go to <CacheDir>/cdn/<version>/
+	Version   string // JP asset version; empty: PinnedVersion
+	CNVersion string // mainland bundle version; empty: PinnedCNVersion
+	// Servers maps bundles to the server they come from ("cn"); the others
+	// come from JP.
+	Servers  map[string]string
+	CacheDir string // cache root; bundles go to <CacheDir>/cdn/<version>/ (mainland: cdn/cn/<version>/)
 	Offline  bool
 	HTTP     *http.Client // nil: a client with a 300 s timeout
 	Log      func(format string, args ...any)
@@ -30,13 +46,37 @@ type Client struct {
 // Bundle returns the raw UnityFS bytes of an Android asset bundle, e.g.
 // "ingameskin/tapeffect/skin00".
 func (c *Client) Bundle(name string) ([]byte, error) {
-	version := c.Version
+	return c.BundleOn(c.Server(name), name)
+}
+
+// Server is the server a bundle comes from ("jp" unless Servers says otherwise).
+func (c *Client) Server(name string) string {
+	if s := c.Servers[name]; s != "" {
+		return s
+	}
+	return "jp"
+}
+
+// BundleOn returns a bundle from the given server's CDN, e.g. a dependency of
+// a mainland bundle, which the mainland CDN serves under its own name.
+func (c *Client) BundleOn(server, name string) ([]byte, error) {
+	version, base, cacheDir := c.Version, root, "cdn"
 	if version == "" {
 		version = PinnedVersion
 	}
+	switch server {
+	case "", "jp":
+	case "cn":
+		version, base, cacheDir = c.CNVersion, rootCN, filepath.Join("cdn", "cn")
+		if version == "" {
+			version = PinnedCNVersion
+		}
+	default:
+		return nil, fmt.Errorf("asset bundle %s: no CDN for server %q", name, server)
+	}
 	var cachePath string
 	if c.CacheDir != "" {
-		cachePath = filepath.Join(c.CacheDir, "cdn", version, filepath.FromSlash(name))
+		cachePath = filepath.Join(c.CacheDir, cacheDir, version, filepath.FromSlash(name))
 		if data, err := os.ReadFile(cachePath); err == nil {
 			return data, nil
 		}
@@ -44,7 +84,7 @@ func (c *Client) Bundle(name string) ([]byte, error) {
 	if c.Offline {
 		return nil, fmt.Errorf("offline and not cached: asset bundle %s", name)
 	}
-	u := root + version + "/Android/" + name
+	u := base + version + "/Android/" + name
 	if c.Log != nil {
 		c.Log("GET %s", u)
 	}

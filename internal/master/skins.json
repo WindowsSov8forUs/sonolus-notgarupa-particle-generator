@@ -1,5 +1,5 @@
 {
- "source": "BanG Dream! Girls Band Party! JP 10.1.4 (230) master data: MasterSkinNotes / Lane / Effect / SoundEffect / DirectionalFlick / Background, MasterCollaborationSkin, MasterLimitedSkin",
+ "source": "BanG Dream! Girls Band Party! skin master data: MasterSkinNotes / Lane / Effect / SoundEffect / DirectionalFlick / Background, MasterCollaborationSkin, MasterLimitedSkin. JP rows: JP 10.1.4 (230) master, plus Limited 5 from the JP 10.2.0 master (as recorded by GarupaEditor's limited-skin recipe evidence, 2026-11-09: limitedSkinId 5, change flags background / lane / notes, bundle skin_collabo_2026; its noteSyncEdgeMargin is not in that evidence and is taken as 0, the value of every other special row). Rows with \"server\": \"cn\" exist only in the mainland (CN) master and take their resources from the mainland servers: Collaboration 100001 (seasonSpecialId 100001) and Limited 10001 / 10002, decoded from the CN 9.4.4 (105) master records (GirlsBandParty-Reverse special-skin-localized-names.json) and matching GarupaEditor's current collaboration table and mainland skin catalog. Collaboration 100002 (seasonSpecialId 100014, skin_bilicat) has exactly the components of Limited 10001 and is not listed.",
  "rules": {
   "normal": "each live setting picks one row per axis (default id 1); the directional effect bundle is tapeffect/directionalflick<directionalFlick bundle><normal|light>",
   "special": "a Collaboration or Limited row replaces the axes listed in components; the other axes keep the normal setting",
@@ -19,7 +19,8 @@
     "directionalFlick",
     "directionalEffect"
    ]
-  }
+  },
+  "server": "a special row's \"server\" (absent: jp) is the server whose resources its components use: Bestdori rips of that server first, official bundles from that server's CDN (cn: the mainland asset bundle CDN)"
  },
  "normal": {
   "notes": [
@@ -1044,6 +1045,23 @@
    }
   },
   {
+   "kind": "collaboration",
+   "id": 100001,
+   "seasonSpecialId": 100001,
+   "server": "cn",
+   "components": {
+    "background": "skin10001",
+    "lane": "skin10001",
+    "notes": "skin10001",
+    "soundEffect": "skin10001",
+    "directionalFlick": "skin10001"
+   },
+   "noteSyncEdgeMargin": 0,
+   "names": {
+    "cn": "彩虹节拍"
+   }
+  },
+  {
    "kind": "limited",
    "id": 1,
    "name": "エイプリルフール2018",
@@ -1113,6 +1131,56 @@
     "en": "Special Skin 4",
     "tw": "愚人節2024",
     "cn": "愚人节2024"
+   }
+  },
+  {
+   "kind": "limited",
+   "id": 5,
+   "name": "魔法少女ノ魔女裁判コラボ",
+   "components": {
+    "background": "skin_collabo_2026",
+    "lane": "skin_collabo_2026",
+    "notes": "skin_collabo_2026"
+   },
+   "noteSyncEdgeMargin": 0,
+   "names": {
+    "jp": "魔法少女ノ魔女裁判コラボ"
+   }
+  },
+  {
+   "kind": "limited",
+   "id": 10001,
+   "name": "小豆泥联动演出皮肤①",
+   "server": "cn",
+   "components": {
+    "background": "skin_bilicat",
+    "effect": "skin_bilicat",
+    "lane": "skin_bilicat",
+    "notes": "skin_bilicat",
+    "judge": "skin_bilicat",
+    "directionalFlick": "skin_bilicat"
+   },
+   "noteSyncEdgeMargin": 0,
+   "names": {
+    "cn": "小豆泥联动演出皮肤①"
+   }
+  },
+  {
+   "kind": "limited",
+   "id": 10002,
+   "name": "小豆泥联动演出皮肤②",
+   "server": "cn",
+   "components": {
+    "background": "skin_bilicat01",
+    "effect": "skin_bilicat01",
+    "lane": "skin_bilicat01",
+    "notes": "skin_bilicat01",
+    "judge": "skin_bilicat01",
+    "directionalFlick": "skin_bilicat01"
+   },
+   "noteSyncEdgeMargin": 0,
+   "names": {
+    "cn": "小豆泥联动演出皮肤②"
    }
   }
  ],

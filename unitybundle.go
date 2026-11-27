@@ -3,7 +3,10 @@ package particle
 // Tap-effect particle bundles read directly from the original asset bundles
 // (official CDN): the prefabs' GameObject / Transform hierarchy and every
 // ParticleSystem, ParticleSystemRenderer, Material and Texture2D, through the
-// bundles' type trees, into the converter's Bundle model.
+// bundles' type trees, into the converter's Bundle model. Materials a bundle
+// references in the bundles it depends on (AssetBundle.m_Dependencies, e.g.
+// the mainland directionalflickskin10001light → directionalflickskin00light)
+// are read from those bundles.
 
 import (
 	"encoding/json"
@@ -11,6 +14,7 @@ import (
 	"image"
 	"math"
 	"sort"
+	"strconv"
 	"strings"
 
 	"github.com/WindowsSov8forUs/sonolus-notgarupa-particle-generator/internal/unity"
@@ -18,19 +22,25 @@ import (
 
 // Unity class IDs.
 const (
-	classGameObject = 1
-	classTransform  = 4
-	classMaterial   = 21
-	classTexture2D  = 28
-	classMesh       = 43
-	classShader     = 48
-	classParticle   = 198
-	classRenderer   = 199
+	classGameObject  = 1
+	classTransform   = 4
+	classMaterial    = 21
+	classTexture2D   = 28
+	classMesh        = 43
+	classShader      = 48
+	classParticle    = 198
+	classRenderer    = 199
+	classAssetBundle = 142
 )
 
 // builtinShaders names shaders referenced in Unity's built-in resource files
 // by path ID (the bundles only reference them).
 var builtinShaders = map[string]string{
+	// The mainland Default-ParticleSystem material (path ID
+	// 8308402369294867413 in directionalflickskin00light and
+	// directionalflickskin10001normal/light) references it; GarupaEditor's
+	// mainland skin catalog resolves that material's shader as this one.
+	"Resources/unity_builtin_extra#211":   "Particles/Standard Unlit",
 	"Resources/unity_builtin_extra#10720": "Mobile/Particles/Additive",
 	// The tap-effect materials named "…alpha" use it where their "…add"
 	// twins on the same texture use 10720.
@@ -133,62 +143,134 @@ func transformProfile(t map[string]any) (TransformProfile, error) {
 	return p, err
 }
 
-// textureSource decodes a texture of a bundle by name.
+// textureSource decodes a texture of a bundle by its key (Material.Texture).
 type textureSource func(name string) (*image.NRGBA, error)
+
+// Dependency is an asset bundle that a bundle depends on.
+type Dependency struct {
+	Name string // asset bundle name, e.g. "ingameskin/tapeffect/directionalflickskin00light"
+	Data []byte // UnityFS bytes
+}
+
+// serialized is the serialized file of an asset bundle with the bundle's
+// other files (resource streams).
+type serialized struct {
+	cab    string // serialized file name, e.g. "CAB-41ce…"
+	bundle string // asset bundle name ("" for the bundle being read)
+	f      *unity.File
+	files  map[string][]byte
+}
+
+func parseBundle(data []byte) (*serialized, error) {
+	files, err := unity.ReadBundle(data)
+	if err != nil {
+		return nil, err
+	}
+	var s *serialized
+	for name, sf := range files {
+		if strings.HasSuffix(name, ".resS") || strings.HasSuffix(name, ".resource") {
+			continue
+		}
+		if s != nil {
+			return nil, fmt.Errorf("bundle has more than one serialized file (%s, %s)", s.cab, name)
+		}
+		f, err := unity.Parse(sf)
+		if err != nil {
+			return nil, fmt.Errorf("%s: %w", name, err)
+		}
+		s = &serialized{cab: name, f: f, files: files}
+	}
+	if s == nil {
+		return nil, fmt.Errorf("bundle has no serialized file")
+	}
+	return s, nil
+}
+
+// BundleDependencies returns the asset bundles a bundle depends on
+// (AssetBundle.m_Dependencies).
+func BundleDependencies(data []byte) ([]string, error) {
+	s, err := parseBundle(data)
+	if err != nil {
+		return nil, err
+	}
+	var out []string
+	for _, id := range s.f.Order {
+		if s.f.Objects[id].ClassID != classAssetBundle {
+			continue
+		}
+		o, err := s.f.Read(id)
+		if err != nil {
+			return nil, err
+		}
+		deps, _ := o["m_Dependencies"].([]any)
+		for _, d := range deps {
+			if name, ok := d.(string); ok {
+				out = append(out, name)
+			}
+		}
+	}
+	return out, nil
+}
 
 // bundleFromUnity builds the Bundle of one original tap-effect asset bundle
 // (key prefixes the system identities) and returns the paths of systems whose
 // GameObject is inactive in the prefab hierarchy (ParticleSystem.Play skips
 // them).
 func bundleFromUnity(data []byte, key string) (*Bundle, map[string]bool, error) {
-	b, inactive, _, err := readTapBundle(data, key)
+	b, inactive, _, err := readTapBundle(data, key, nil)
 	return b, inactive, err
 }
 
 // readTapBundle is bundleFromUnity plus a decoder for the bundle's textures
-// (original pixels, from the bundle's resource stream).
-func readTapBundle(data []byte, key string) (*Bundle, map[string]bool, textureSource, error) {
-	b, inactive, f, files, err := buildBundle(data, key)
+// (original pixels, from the resource streams of the bundle or of the
+// dependency that holds them).
+func readTapBundle(data []byte, key string, deps []Dependency) (*Bundle, map[string]bool, textureSource, error) {
+	b, inactive, textures, err := buildBundle(data, key, deps)
 	if err != nil {
 		return nil, nil, nil, err
 	}
-	textures := map[string]int64{}
-	for _, id := range f.Order {
-		if f.Objects[id].ClassID != classTexture2D {
-			continue
-		}
-		o, err := f.Read(id)
-		if err != nil {
-			return nil, nil, nil, err
-		}
-		textures[str(o, "m_Name")] = id
-	}
 	src := func(name string) (*image.NRGBA, error) {
-		id, ok := textures[name]
+		t, ok := textures[name]
 		if !ok {
 			return nil, fmt.Errorf("bundle %s has no texture %s", key, name)
 		}
-		return unity.DecodeTexture(f, files, id)
+		return unity.DecodeTexture(t.s.f, t.s.files, t.id)
 	}
 	return b, inactive, src, nil
 }
 
-func buildBundle(data []byte, key string) (*Bundle, map[string]bool, *unity.File, map[string][]byte, error) {
-	files, err := unity.ReadBundle(data)
+// textureRef is a texture object of a bundle or of one of its dependencies.
+type textureRef struct {
+	s  *serialized
+	id int64
+}
+
+func buildBundle(data []byte, key string, deps []Dependency) (*Bundle, map[string]bool, map[string]textureRef, error) {
+	main, err := parseBundle(data)
 	if err != nil {
-		return nil, nil, nil, nil, err
+		return nil, nil, nil, err
 	}
-	var f *unity.File
-	for name, sf := range files {
-		if strings.HasSuffix(name, ".resS") {
-			continue
+	f, files := main.f, main.files
+	depFiles := map[string]*serialized{} // by serialized file name
+	for _, d := range deps {
+		s, err := parseBundle(d.Data)
+		if err != nil {
+			return nil, nil, nil, fmt.Errorf("dependency %s: %w", d.Name, err)
 		}
-		if f, err = unity.Parse(sf); err != nil {
-			return nil, nil, nil, nil, fmt.Errorf("%s: %w", name, err)
-		}
+		s.bundle = d.Name
+		depFiles[s.cab] = s
 	}
-	if f == nil {
-		return nil, nil, nil, nil, fmt.Errorf("bundle has no serialized file")
+	// external resolves file index n (> 0) of s to a dependency's serialized
+	// file ("archive:/CAB-…/CAB-…"); nil for Unity's built-in resources.
+	external := func(s *serialized, n int) *serialized {
+		if n <= 0 || n > len(s.f.Externals) {
+			return nil
+		}
+		path := s.f.Externals[n-1]
+		if !strings.HasPrefix(path, "archive:/") {
+			return nil
+		}
+		return depFiles[path[strings.LastIndex(path, "/")+1:]]
 	}
 	objects := map[int64]map[string]any{}
 	byClass := map[int32][]int64{}
@@ -201,7 +283,7 @@ func buildBundle(data []byte, key string) (*Bundle, map[string]bool, *unity.File
 		}
 		o, err := f.Read(id)
 		if err != nil {
-			return nil, nil, nil, nil, err
+			return nil, nil, nil, err
 		}
 		objects[id] = o
 		byClass[class] = append(byClass[class], id)
@@ -267,18 +349,84 @@ func buildBundle(data []byte, key string) (*Bundle, map[string]bool, *unity.File
 		Velocity: map[string]VelocityModule{}, Force: map[string]ForceModule{}, CustomData: map[string]CustomDataModule{}}
 	b.Meshes = map[string]*unity.Mesh{}
 	inactive := map[string]bool{}
-	materialName := func(p pptr) string {
-		if p.file != 0 || p.id == 0 {
+	// Texture keys: the texture name, made unique by the path ID when the
+	// name is not unique in its file, prefixed by the asset bundle name for a
+	// dependency's texture.
+	textures := map[string]textureRef{}
+	textureKey := func(s *serialized, id int64) (string, error) {
+		o, err := s.f.Read(id)
+		if err != nil {
+			return "", err
+		}
+		name := str(o, "m_Name")
+		same := 0
+		for _, other := range s.f.Order {
+			if s.f.Objects[other].ClassID == classTexture2D {
+				if t, err := s.f.Read(other); err == nil && str(t, "m_Name") == name {
+					same++
+				}
+			}
+		}
+		k := name
+		if same > 1 {
+			k += "#" + strconv.FormatInt(id, 10)
+		}
+		if s.bundle != "" {
+			k = s.bundle + ":" + k
+		}
+		textures[k] = textureRef{s, id}
+		return k, nil
+	}
+	// Materials by object, named by m_Name (a dependency's prefixed by its
+	// asset bundle name).
+	type materialRef struct {
+		s  *serialized
+		id int64
+	}
+	var materialRefs []materialRef
+	materialKeys := map[materialRef]string{}
+	addMaterial := func(s *serialized, id int64) string {
+		r := materialRef{s, id}
+		if k, ok := materialKeys[r]; ok {
+			return k
+		}
+		o, err := s.f.Read(id)
+		if err != nil || s.f.Objects[id].ClassID != classMaterial {
 			return ""
 		}
-		return str(objects[p.id], "m_Name")
+		k := str(o, "m_Name")
+		if s.bundle != "" {
+			k = s.bundle + ":" + k
+		}
+		materialKeys[r] = k
+		materialRefs = append(materialRefs, r)
+		return k
+	}
+	for _, id := range byClass[classMaterial] {
+		addMaterial(main, id)
+	}
+	var unresolved []string
+	materialName := func(p pptr) string {
+		switch {
+		case p.id == 0:
+			return ""
+		case p.file == 0:
+			return str(objects[p.id], "m_Name")
+		}
+		if d := external(main, p.file); d != nil {
+			if k := addMaterial(d, p.id); k != "" {
+				return k
+			}
+		}
+		unresolved = append(unresolved, fmt.Sprintf("%v", p))
+		return ""
 	}
 	for _, psID := range byClass[classParticle] {
 		ps := objects[psID]
 		goID := toPPtr(ps["m_GameObject"]).id
 		tid, t := component(goID, classTransform)
 		if t == nil {
-			return nil, nil, nil, nil, fmt.Errorf("particle system %d has no Transform", psID)
+			return nil, nil, nil, fmt.Errorf("particle system %d has no Transform", psID)
 		}
 		path := pathOf(tid)
 		if !activeInHierarchy(tid) {
@@ -286,18 +434,18 @@ func buildBundle(data []byte, key string) (*Bundle, map[string]bool, *unity.File
 		}
 		def := SystemDef{Identity: key + ":" + path, Path: path, Profile: path, ParentTransforms: []TransformProfile{}}
 		if def.Transform, err = transformProfile(t); err != nil {
-			return nil, nil, nil, nil, err
+			return nil, nil, nil, err
 		}
 		for father := toPPtr(t["m_Father"]).id; father != 0; father = toPPtr(objects[father]["m_Father"]).id {
 			pt, err := transformProfile(objects[father])
 			if err != nil {
-				return nil, nil, nil, nil, err
+				return nil, nil, nil, err
 			}
 			def.ParentTransforms = append(def.ParentTransforms, pt)
 		}
 		var prof SystemProfile
 		if err := decodeInto(ps, &prof.System); err != nil {
-			return nil, nil, nil, nil, fmt.Errorf("%s: %w", path, err)
+			return nil, nil, nil, fmt.Errorf("%s: %w", path, err)
 		}
 		prof.Modules = map[string]string{}
 		for _, name := range unityModules {
@@ -358,7 +506,7 @@ func buildBundle(data []byte, key string) (*Bundle, map[string]bool, *unity.File
 				b.Modules.CustomData[path] = v
 			}
 			if err != nil {
-				return nil, nil, nil, nil, fmt.Errorf("%s %s: %w", path, name, err)
+				return nil, nil, nil, fmt.Errorf("%s %s: %w", path, name, err)
 			}
 		}
 		if _, r := component(goID, classRenderer); r != nil {
@@ -366,7 +514,7 @@ func buildBundle(data []byte, key string) (*Bundle, map[string]bool, *unity.File
 				Alignment: int(num(r, "m_RenderAlignment")), LengthScale: num(r, "m_LengthScale"),
 				VelocityScale: num(r, "m_VelocityScale"), SortingOrder: int(num(r, "m_SortingOrder"))}
 			if err := decodeInto(r["m_Pivot"], &rp.Pivot); err != nil {
-				return nil, nil, nil, nil, err
+				return nil, nil, nil, err
 			}
 			if rp.RenderMode == 4 {
 				mp := toPPtr(r["m_Mesh"])
@@ -376,12 +524,12 @@ func buildBundle(data []byte, key string) (*Bundle, map[string]bool, *unity.File
 				case mp.file == 0 && mp.id != 0:
 					mesh, err := unity.DecodeMesh(f, files, mp.id)
 					if err != nil {
-						return nil, nil, nil, nil, fmt.Errorf("%s: %w", path, err)
+						return nil, nil, nil, fmt.Errorf("%s: %w", path, err)
 					}
 					rp.Mesh = mesh.Name
 					b.Meshes[mesh.Name] = mesh
 				default:
-					return nil, nil, nil, nil, fmt.Errorf("%s: unsupported particle mesh %v", path, mp)
+					return nil, nil, nil, fmt.Errorf("%s: unsupported particle mesh %v", path, mp)
 				}
 			}
 			mats, _ := r["m_Materials"].([]any)
@@ -401,20 +549,27 @@ func buildBundle(data []byte, key string) (*Bundle, map[string]bool, *unity.File
 		b.Systems = append(b.Systems, def)
 	}
 	sort.Slice(b.Systems, func(i, j int) bool { return b.Systems[i].Path < b.Systems[j].Path })
+	if len(unresolved) > 0 {
+		return nil, nil, nil, fmt.Errorf("materials in no loaded bundle: %v (externals %v)", unresolved, f.Externals)
+	}
 
-	shaderName := func(p pptr) string {
+	shaderName := func(s *serialized, p pptr) string {
 		if p.file == 0 {
-			parsed, _ := objects[p.id]["m_ParsedForm"].(map[string]any)
+			o, _ := s.f.Read(p.id)
+			parsed, _ := o["m_ParsedForm"].(map[string]any)
 			return str(parsed, "m_Name")
 		}
-		if p.file-1 < len(f.Externals) {
-			return builtinShaders[fmt.Sprintf("%s#%d", f.Externals[p.file-1], p.id)]
+		if p.file-1 < len(s.f.Externals) {
+			return builtinShaders[fmt.Sprintf("%s#%d", s.f.Externals[p.file-1], p.id)]
 		}
 		return ""
 	}
-	for _, id := range byClass[classMaterial] {
-		m := objects[id]
-		mat := Material{Name: str(m, "m_Name"), Shader: shaderName(toPPtr(m["m_Shader"])), TextureScale: struct{ X, Y float64 }{1, 1}}
+	for _, r := range materialRefs {
+		m, err := r.s.f.Read(r.id)
+		if err != nil {
+			return nil, nil, nil, err
+		}
+		mat := Material{Name: materialKeys[r], Shader: shaderName(r.s, toPPtr(m["m_Shader"])), TextureScale: struct{ X, Y float64 }{1, 1}}
 		props, _ := m["m_SavedProperties"].(map[string]any)
 		envs, _ := props["m_TexEnvs"].([]any)
 		for _, e := range envs {
@@ -423,8 +578,20 @@ func buildBundle(data []byte, key string) (*Bundle, map[string]bool, *unity.File
 				continue
 			}
 			env, _ := pair["second"].(map[string]any)
-			if tp := toPPtr(env["m_Texture"]); tp.file == 0 && tp.id != 0 {
-				mat.Texture = str(objects[tp.id], "m_Name")
+			if tp := toPPtr(env["m_Texture"]); tp.id != 0 {
+				ts := r.s
+				if tp.file != 0 {
+					// a dependency's texture; Unity's built-in textures are not read
+					ts = external(r.s, tp.file)
+					if ts == nil && tp.file <= len(r.s.f.Externals) && strings.HasPrefix(r.s.f.Externals[tp.file-1], "archive:/") {
+						return nil, nil, nil, fmt.Errorf("material %s: texture %v in no loaded bundle", mat.Name, tp)
+					}
+				}
+				if ts != nil {
+					if mat.Texture, err = textureKey(ts, tp.id); err != nil {
+						return nil, nil, nil, err
+					}
+				}
 			}
 			_ = decodeInto(env["m_Scale"], &mat.TextureScale)
 			_ = decodeInto(env["m_Offset"], &mat.TextureOffset)
@@ -456,5 +623,5 @@ func buildBundle(data []byte, key string) (*Bundle, map[string]bool, *unity.File
 		t := objects[id]
 		b.Textures = append(b.Textures, TextureInfo{Name: str(t, "m_Name"), Width: int(num(t, "m_Width")), Height: int(num(t, "m_Height"))})
 	}
-	return b, inactive, f, files, nil
+	return b, inactive, textures, nil
 }

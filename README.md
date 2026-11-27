@@ -4,13 +4,13 @@
 
 ## 条目
 
-条目由 `internal/master`（原作 JP 10.1.4 的皮肤主数据）推出，共 77 个：
+条目由 `internal/master`（原作的皮肤主数据（JP 主数据的各行与 Limited 1–5，以及只存在于大陆服主数据的 Collaboration 100001、Limited 10001 / 10002；后者带 `"server": "cn"`，资源取自大陆服））推出，共 87 个：
 
 | 组成 | 来源 | 数量 |
 |---|---|---|
 | 普通设置 | tap effect 5 × 方向键皮肤 5 | 25 |
-| 特殊组合（Collaboration / Limited） | 组合中的 tap effect（persona、miku、cafe、maid、coin、witch、stage、delta、april2019）× 其余轴的普通设置；persona 的方向键组合另固定方向键皮肤 | 46 |
-| `#HABAHIRO` | habahiro tap effect（含宽度变体与换道闪光所在 bundle）× 全部可选方向键皮肤（5 个普通 + persona） | 6 |
+| 特殊组合（Collaboration / Limited） | 组合中的 tap effect（persona、miku、cafe、maid、coin、witch、stage、delta、april2019）× 其余轴的普通设置；persona 的方向键组合另固定方向键皮肤；大陆服 Collaboration 100001 固定方向键皮肤 skin10001 × 普通 tap effect；大陆服 Limited 10001 / 10002 固定 tap effect 与方向键皮肤（`skin_bilicat`、`skin_bilicat01`） | 53 |
+| `#HABAHIRO` | habahiro tap effect（含宽度变体与换道闪光所在 bundle）× 全部可选方向键皮肤（5 个普通 + persona、skin10001、skin_bilicat、skin_bilicat01） | 9 |
 
 原作的方向键特效设置（「左右フリックアイコンエフェクト」大 / 小，即 `tapeffect/directionalflick<方向键皮肤><normal|light>`）不分条目：每个条目同时含两种设置的方向键特效，normal 用 prefab 原名，light 加前缀 `light/`（如 `light/effect_tap_directional_flick_l`、`light/effect_tap_directional_flick_l_finger#plane44`），由引擎的选项选择。
 
@@ -34,18 +34,18 @@ sonolus-notgarupa-particle-generator [-out out] [-cache .cache] [-offline] [-v] 
 | 参数 | 默认值 | 作用 |
 |---|---|---|
 | `-out` | `out` | 输出目录：`<out>/source`（sonolus-pack 源）、`<out>/pack`（可直接加载的包，总是打包）、`<out>/contracts/<条目>.json`（每个条目的效果契约） |
-| `-cache` | `.cache` | 下载缓存目录（CDN bundle 在 `<cache>/cdn/<版本>/`） |
+| `-cache` | `.cache` | 下载缓存目录（CDN bundle 在 `<cache>/cdn/<版本>/`，大陆服的在 `<cache>/cdn/cn/<版本>/`） |
 | `-offline` | false | 只使用缓存中的下载 |
 | `-v` | false | 输出下载日志与每个条目 |
 | `-j` | CPU 数 | 并行转换数 |
-| `-asset-version` | 固定版本 | 官方 CDN 资源版本（只在验证新版本时使用） |
+| `-asset-version` | 固定版本 | JP 官方 CDN 资源版本（只在验证新版本时使用；大陆服 bundle 的版本固定） |
 | `-version` | — | 输出版本号后退出 |
 
 全量运行约 2 分钟（8 核），`out/pack` 约 48 MB（各条目相同的资源文件按哈希只存一份），源目录约 124 MB。
 
 ## 素材来源
 
-- 判定粒子：从原作官方资源 CDN（`https://content.garupa.jp/Release/<版本>/Android/<bundle>`）下载 `ingameskin/tapeffect/<tap effect>` 与 `ingameskin/tapeffect/directionalflick<方向键皮肤><normal|light>`，资源版本固定为 `internal/cdn` 的 `PinnedVersion`（`10.1.0.200_e019f5bb…`）。程序直接解析 UnityFS（LZ4）与带 type tree 的序列化文件，读取 GameObject / Transform / ParticleSystem / ParticleSystemRenderer / Material / Mesh，按 `m_IsActive` 跳过未激活的子系统，并解码 Texture2D（RGB24、RGBA32、ETC1、ETC2 + EAC）与 Mesh（顶点流、UV、顶点色、16/32 位索引）。每个 bundle 只下载、解析、转换一次，由所有用到它的条目共享。
+- 判定粒子：从原作官方资源 CDN（`https://content.garupa.jp/Release/<版本>/Android/<bundle>`）下载 `ingameskin/tapeffect/<tap effect>` 与 `ingameskin/tapeffect/directionalflick<方向键皮肤><normal|light>`，资源版本固定为 `internal/cdn` 的 `PinnedVersion`（`10.2.0.190_b3da1643…`；旧固定版本 `10.1.0.200_e019f5bb…` 的全部 27 个 bundle 在新版本下逐字节相同）；大陆服主数据行的 bundle 取自大陆服资源 CDN（`https://line3-prod-patch-bd.bilibiligame.net/assetbundle/<版本>/Android/<bundle>`，版本固定为 `internal/cdn` 的 `PinnedCNVersion`（`10.1.3.0`）），其余取自 JP。bundle 依赖其他 bundle（`AssetBundle.m_Dependencies`）时，依赖从同一服下载，渲染器引用的依赖中的材质及其贴图一并读取（大陆服 `directionalflickskin10001normal/light` 的多数材质在 `directionalflickskin00normal/light` 中）。程序直接解析 UnityFS（LZ4）与带 type tree 的序列化文件，读取 GameObject / Transform / ParticleSystem / ParticleSystemRenderer / Material / Mesh，按 `m_IsActive` 跳过未激活的子系统，并解码 Texture2D（RGB24、RGBA32、ETC1、ETC2 + EAC）与 Mesh（顶点流、UV、顶点色、16/32 位索引）。每个 bundle 只下载、解析、转换一次，由所有用到它的条目共享。
 
 本生成器不使用 Bestdori。
 
@@ -80,7 +80,7 @@ Sonolus 粒子是只做线性插值、只有线性随机输入的旋转矩形，
 
 `<out>/contracts/<条目>.json` 列出该条目的每个效果：`name`、`prefab`、`duration`、`loop`、`planeDeg` 与 `quadScale`（平面效果的纵向压缩 cos）、`groups`、`particles`、`systems`、`notes`（跳过的系统与原因）、HABAHIRO 宽度变体的 `width`。
 
-不同 tap effect 的平面倾角不同（44°–64°、−65° 等），所以各条目的效果名集合不同：全部条目的效果名并集为 186 个（普通条目 96 个，HABAHIRO 条目 129 个），有的条目某个 prefab 只有平面部分、没有面向屏幕的部分。引擎声明并集，初始化时用 `Exists()` 记下当前条目有哪些部分（每个 prefab 最多两个平面部分）。
+不同 tap effect 的平面倾角不同（44°–64°、−65° 等），所以各条目的效果名集合不同：全部条目的效果名并集为 187 个（普通条目 97 个，HABAHIRO 条目 130 个），有的条目某个 prefab 只有平面部分、没有面向屏幕的部分。引擎声明并集，初始化时用 `Exists()` 记下当前条目有哪些部分（每个 prefab 最多两个平面部分）。
 
 ### 统一时长
 
@@ -92,7 +92,7 @@ Sonolus 粒子效果中的粒子时间是生成时长的比例，引擎读不到
 | `effect_tap_great`、`effect_tap_skill_great` | 0.85 s |
 | `effect_tap_perfect`、`effect_tap_skill_perfect`、`effect_tap_swipe` | 1 s |
 | `effect_TapKeep`（循环） | 1 s，平面部分 18 s |
-| 方向键 `effect_tap_directional_flick_l/r`、`_2`、`_3`、`_finger` | 0.7 s、1.1 s、1.1 s、0.35 s |
+| 方向键 `effect_tap_directional_flick_l/r`、`_2`、`_3`、`_finger` | 0.7 s、1.1 s、1.1 s、0.5 s（finger 取大陆服 `skin_bilicat*` 的 0.5 s，其余皮肤 0.35 s） |
 
 一次性效果取该族在全部 tap effect 中最长的时长，较短的效果时间不变、提前结束；循环效果取各周期的公倍数（TapKeep 平面部分的周期为 1、6、9 s），较短的周期重复。某个效果超过该族时长或周期不能整除时生成失败，需要同时修改 `canonical.go` 与引擎常量。
 

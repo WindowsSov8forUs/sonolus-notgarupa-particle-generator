@@ -35,8 +35,8 @@ var canonicalDurations = map[string]float64{
 	"effect_tap_directional_flick_r_2":      1.1,
 	"effect_tap_directional_flick_l_3":      1.1,
 	"effect_tap_directional_flick_r_3":      1.1,
-	"effect_tap_directional_flick_l_finger": 0.35,
-	"effect_tap_directional_flick_r_finger": 0.35,
+	"effect_tap_directional_flick_l_finger": 0.5, // mainland skin_bilicat(01); every other skin 0.35
+	"effect_tap_directional_flick_r_finger": 0.5,
 }
 
 // family is the canonical-duration family of a part.

@@ -32,9 +32,12 @@ var conversion = convertOptions{maxStrata: 4, maxSegments: 8, posTol: 0.05, loop
 // Source configures where downloadable assets come from.
 type Source struct {
 	// CacheDir caches downloads (asset bundles under
-	// <CacheDir>/cdn/<version>/); empty disables the disk cache.
+	// <CacheDir>/cdn/<version>/, mainland bundles under
+	// <CacheDir>/cdn/cn/<version>/); empty disables the disk cache.
 	CacheDir string
-	// AssetVersion is the content CDN asset version ("" = PinnedAssetVersion).
+	// AssetVersion is the JP content CDN asset version ("" =
+	// PinnedAssetVersion). The bundles of mainland-only master rows come from
+	// the mainland CDN at cdn.PinnedCNVersion.
 	AssetVersion string
 	// Offline fails every download that is not already cached.
 	Offline bool
@@ -154,7 +157,7 @@ func Generate(ctx context.Context, opts Options, emit func(*Result) error) error
 	if workers <= 0 {
 		workers = runtime.NumCPU()
 	}
-	client := &cdn.Client{Version: opts.Source.AssetVersion, CacheDir: opts.Source.CacheDir, Offline: opts.Source.Offline,
+	client := &cdn.Client{Version: opts.Source.AssetVersion, Servers: m.BundleServers(), CacheDir: opts.Source.CacheDir, Offline: opts.Source.Offline,
 		HTTP: opts.Source.HTTPClient, Log: opts.Source.Log, Ctx: ctx}
 
 	// Units of conversion: the ordinary prefabs of each tap-effect bundle,
@@ -210,11 +213,26 @@ func Generate(ctx context.Context, opts Options, emit func(*Result) error) error
 		bmu.Unlock()
 		once.Do(func() {
 			data, err := client.Bundle(name)
+			var deps []Dependency
+			if err == nil {
+				// the bundles it depends on, from the same server
+				var names []string
+				names, err = BundleDependencies(data)
+				for _, d := range names {
+					if err != nil {
+						break
+					}
+					var dd []byte
+					if dd, err = client.BundleOn(client.Server(name), d); err == nil {
+						deps = append(deps, Dependency{Name: d, Data: dd})
+					}
+				}
+			}
 			if err == nil {
 				var b *Bundle
 				var inactive map[string]bool
 				var src textureSource
-				b, inactive, src, err = readTapBundle(data, name)
+				b, inactive, src, err = readTapBundle(data, name, deps)
 				if err == nil {
 					store.addBundle(name, src)
 					bmu.Lock()

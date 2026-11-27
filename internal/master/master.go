@@ -1,5 +1,7 @@
-// Package master holds the original game's skin master data (JP 10.1.4) and
-// derives from it every Sonolus item the generators build: one item per
+// Package master holds the original game's skin master data (the JP master
+// with Limited 1–5, plus the special rows that exist only in the mainland CN
+// master; see skins.json "source") and derives from it every Sonolus item the
+// generators build: one item per
 // combination of the live settings that affect a resource type, with the
 // special (Collaboration / Limited) rows as fixed combinations and HABAHIRO
 // as the chart-forced combination.
@@ -18,6 +20,9 @@
 // combination: it is written once, as its first bundle in the name and as
 // the row's name in the title (the season description of a Collaboration
 // row, the skin name of a Limited row).
+//
+// A special row from another server's master (Server, e.g. "cn") takes the
+// resources of its components from that server (BundleServers).
 package master
 
 import (
@@ -94,8 +99,11 @@ type Row struct {
 
 // Special is one Collaboration or Limited row.
 type Special struct {
-	Kind               string            `json:"kind"` // collaboration | limited
-	ID                 int               `json:"id"`
+	Kind string `json:"kind"` // collaboration | limited
+	ID   int    `json:"id"`
+	// Server is the master the row comes from and whose resources its
+	// components use ("" = jp).
+	Server             string            `json:"server"`
 	SeasonSpecialID    int               `json:"seasonSpecialId"`
 	Name               string            `json:"name"`
 	Names              Names             `json:"names"`      // season description / limited skin name
@@ -179,6 +187,40 @@ func (m *Master) Specials() []Special {
 		}
 		if !excluded {
 			out = append(out, s)
+		}
+	}
+	return out
+}
+
+// BundleServers maps the asset bundles of the special rows from another
+// server's master (e.g. "ingameskin/tapeffect/skin_bilicat") to that server
+// ("cn"). Every other bundle is taken from JP.
+func (m *Master) BundleServers() map[string]string {
+	out := map[string]string{}
+	for _, s := range m.Specials() {
+		if s.Server == "" || s.Server == "jp" {
+			continue
+		}
+		for axis, b := range s.Components {
+			switch axis {
+			case "notes":
+				out["ingameskin/noteskin/"+b] = s.Server
+			case "lane":
+				out["ingameskin/fieldskin/"+b] = s.Server
+			case "effect":
+				out["ingameskin/tapeffect/"+b] = s.Server
+			case "judge":
+				out["ingameskin/judgeskin/"+b] = s.Server
+			case "soundEffect":
+				out["sound/tapseskin/"+b] = s.Server
+			case "background":
+				out["ingameskin/bgskin/"+b] = s.Server
+			case "directionalFlick":
+				out["ingameskin/noteskin/directionalflick"+b] = s.Server
+				for _, v := range []string{"normal", "light"} {
+					out["ingameskin/tapeffect/directionalflick"+b+v] = s.Server
+				}
+			}
 		}
 	}
 	return out
